@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agorà — Accesso</title>
+  <meta name="description" content="Piattaforma scolastica Agorà: gestione degli accessi e condivisione di materiali didattici." />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>" />
+</head>
+<body>
+
+<main class="pagina-login">
+
+  <!-- ═══════════════════════════════════════════
+       PANNELLO SINISTRO — Identità visiva
+  ══════════════════════════════════════════════ -->
+  <aside class="pannello-decorativo" aria-hidden="true">
+
+    <div class="brand-logo">
+      <span class="simbolo">🏛</span>
+      <h1>Agorà</h1>
+      <p class="sottotitolo">Piattaforma Didattica</p>
+    </div>
+
+    <div class="citazione-classica">
+      <blockquote>
+        La radice dell'educazione è amara,<br>
+        ma il suo frutto è dolce.
+      </blockquote>
+      <cite>— Aristotele</cite>
+    </div>
+
+    <!-- Colonne decorative in stile tempio -->
+    <div class="colonne-decorative" aria-hidden="true">
+      <div class="colonna"></div>
+      <div class="colonna"></div>
+      <div class="colonna"></div>
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════════════════════════════
+       PANNELLO DESTRO — Form di accesso
+  ══════════════════════════════════════════════ -->
+  <section class="pannello-form">
+    <div class="contenitore-form">
+
+      <div class="intestazione-form">
+        <h2>Benvenuto</h2>
+        <p>Accedi per continuare verso l'agorà digitale.</p>
+      </div>
+
+      <!-- Navigazione Tab -->
+      <nav class="nav-tab" role="tablist" aria-label="Modalità di accesso">
+        <button
+          class="tab-btn attivo"
+          role="tab"
+          aria-selected="true"
+          aria-controls="tab-login"
+          data-tab="login"
+        >
+          Accedi
+        </button>
+        <button
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-registra"
+          data-tab="registra"
+        >
+          Registrati
+        </button>
+      </nav>
+
+      <!-- ─────────────────────────────────────
+           TAB 1: LOGIN
+      ────────────────────────────────────── -->
+      <div
+        id="tab-login"
+        class="pannello-tab attivo"
+        role="tabpanel"
+        aria-labelledby="tab-btn-login"
+      >
+        <!-- Feedback visivo -->
+        <div
+          id="feedback-login"
+          class="messaggio-feedback"
+          role="alert"
+          aria-live="polite"
+        ></div>
+
+        <form id="form-login" novalidate autocomplete="on">
+
+          <div class="gruppo-campo">
+            <label for="login-username">Username</label>
+            <input
+              type="text"
+              id="login-username"
+              name="username"
+              placeholder="es. marco.rossi"
+              autocomplete="username"
+              required
+              minlength="3"
+            />
+          </div>
+
+          <div class="gruppo-campo">
+            <label for="login-password">Password</label>
+            <input
+              type="password"
+              id="login-password"
+              name="password"
+              placeholder="La tua password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn-primario" id="btn-login">
+            <span>Entra</span>
+          </button>
+
+        </form>
+
+        <div class="ornamento">✦ ✦ ✦</div>
+
+        <p style="font-size:0.78rem; color: var(--colore-testo-leggero); text-align:center;">
+          Non hai ancora un account?
+          <button
+            type="button"
+            onclick="document.querySelector('[data-tab=registra]').click()"
+            style="background:none; border:none; color: var(--colore-egeo); cursor:pointer; font-family: var(--font-body); font-size:inherit; font-weight:400; padding:0; text-decoration: underline; text-underline-offset: 3px;"
+          >
+            Crea uno qui
+          </button>
+        </p>
+
+      </div><!-- /tab-login -->
+
+      <!-- ─────────────────────────────────────
+           TAB 2: REGISTRAZIONE
+      ────────────────────────────────────── -->
+      <div
+        id="tab-registra"
+        class="pannello-tab"
+        role="tabpanel"
+        aria-labelledby="tab-btn-registra"
+      >
+        <!-- Feedback visivo -->
+        <div
+          id="feedback-registra"
+          class="messaggio-feedback"
+          role="alert"
+          aria-live="polite"
+        ></div>
+
+        <form id="form-registra" novalidate autocomplete="off">
+
+          <!-- Riga nome / cognome affiancati -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap: 1rem;">
+            <div class="gruppo-campo" style="margin-bottom:0;">
+              <label for="reg-nome">Nome</label>
+              <input
+                type="text"
+                id="reg-nome"
+                name="nome"
+                placeholder="Marco"
+                autocomplete="given-name"
+              />
+            </div>
+            <div class="gruppo-campo" style="margin-bottom:0;">
+              <label for="reg-cognome">Cognome</label>
+              <input
+                type="text"
+                id="reg-cognome"
+                name="cognome"
+                placeholder="Rossi"
+                autocomplete="family-name"
+              />
+            </div>
+          </div>
+
+          <!-- Spazio dopo la riga doppia -->
+          <div style="height: var(--spazio-l);"></div>
+
+          <div class="gruppo-campo">
+            <label for="reg-email">Email <span style="color:var(--colore-testo-leggero); font-weight:300;">(opzionale)</span></label>
+            <input
+              type="email"
+              id="reg-email"
+              name="email"
+              placeholder="marco@scuola.edu"
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="gruppo-campo">
+            <label for="reg-username">Username <span style="color:var(--colore-terracotta);">*</span></label>
+            <input
+              type="text"
+              id="reg-username"
+              name="username"
+              placeholder="minimo 3 caratteri"
+              autocomplete="off"
+              required
+              minlength="3"
+            />
+          </div>
+
+          <div class="gruppo-campo">
+            <label for="reg-password">Password <span style="color:var(--colore-terracotta);">*</span></label>
+            <input
+              type="password"
+              id="reg-password"
+              name="password"
+              placeholder="minimo 6 caratteri"
+              autocomplete="new-password"
+              required
+              minlength="6"
+            />
+          </div>
+
+          <button type="submit" class="btn-primario" id="btn-registra">
+            <span>Registrati</span>
+          </button>
+
+        </form>
+
+        <div class="footer-form">
+          <p>
+            Registrandoti accetti le politiche di utilizzo della piattaforma.<br>
+            Il tuo ruolo iniziale sarà <strong>Studente</strong>.
+          </p>
+        </div>
+
+      </div><!-- /tab-registra -->
+
+    </div><!-- /contenitore-form -->
+  </section>
+
+</main>
+
+<!-- Script: prima api.js (funzioni fetch), poi main.js (controller UI) -->
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+
+</body>
+</html>

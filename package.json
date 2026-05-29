@@ -1,0 +1,20 @@
+{
+  "name": "agora",
+  "version": "1.0.0",
+  "description": "Agorà - Piattaforma scolastica per la gestione degli accessi (IAM) e la condivisione di materiali didattici.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": ["IAM", "scuola", "didattica", "accessi", "materiali"],
+  "author": "Progetto Agorà",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

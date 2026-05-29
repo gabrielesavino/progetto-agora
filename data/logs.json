@@ -1,0 +1,37 @@
+[
+  {
+    "id": "log_1779965622321",
+    "timestamp": "2026-05-28T10:53:42.321Z",
+    "evento": "SERVER_AVVIATO",
+    "utente": "sistema",
+    "dettagli": "Porta: 3000"
+  },
+  {
+    "id": "log_1779965632137",
+    "timestamp": "2026-05-28T10:53:52.137Z",
+    "evento": "SERVER_AVVIATO",
+    "utente": "sistema",
+    "dettagli": "Porta: 3000"
+  },
+  {
+    "id": "log_1779965634149",
+    "timestamp": "2026-05-28T10:53:54.149Z",
+    "evento": "LOGIN_RIUSCITO",
+    "utente": "admin",
+    "dettagli": "Ruolo: Admin"
+  },
+  {
+    "id": "log_1779965634187",
+    "timestamp": "2026-05-28T10:53:54.187Z",
+    "evento": "LOGIN_FALLITO",
+    "utente": "admin",
+    "dettagli": "Credenziali non valide"
+  },
+  {
+    "id": "log_fec5d877743f",
+    "timestamp": "2026-05-28T11:08:51.626Z",
+    "evento": "SERVER_START",
+    "username": "sistema",
+    "dettagli": "Agorà v2.0 avviato sulla porta 3000"
+  }
+]
