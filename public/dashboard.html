@@ -3,110 +3,145 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agorà — Dashboard Studente</title>
+  <title>Agorà — Dashboard</title>
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>" />
-  <style>
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-    }
-    .costruzione {
-      max-width: 480px;
-      padding: 3rem 2rem;
-    }
-    .costruzione .simbolo {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 1.5rem;
-    }
-    .costruzione h1 {
-      font-family: var(--font-display);
-      font-size: 2.8rem;
-      font-weight: 300;
-      margin-bottom: 1rem;
-    }
-    .costruzione p {
-      font-size: 0.9rem;
-      color: var(--colore-testo-leggero);
-      line-height: 1.7;
-    }
-    .fase-badge {
-      display: inline-block;
-      margin-top: 1.5rem;
-      padding: 4px 14px;
-      background: var(--colore-egeo-chiaro);
-      color: var(--colore-egeo);
-      font-size: 0.68rem;
-      font-weight: 500;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      border-radius: 2px;
-    }
-    .btn-logout {
-      display: inline-block;
-      margin-top: 2rem;
-      padding: 0.6rem 1.5rem;
-      background: none;
-      border: 1px solid var(--colore-bordo);
-      border-radius: 3px;
-      font-family: var(--font-body);
-      font-size: 0.73rem;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--colore-testo-leggero);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-logout:hover {
-      border-color: var(--colore-testo);
-      color: var(--colore-testo);
-    }
-    .info-utente {
-      margin-top: 1rem;
-      font-size: 0.8rem;
-      color: var(--colore-testo-leggero);
-    }
-    .info-utente strong {
-      color: var(--colore-testo);
-    }
-  </style>
 </head>
-<body>
-  <div class="costruzione">
-    <span class="simbolo">📚</span>
-    <h1>Dashboard Studente</h1>
-    <p>
-      Questa sezione sarà il cuore della piattaforma: qui potrai visualizzare,
-      cercare e caricare materiali didattici.
-    </p>
-    <div class="fase-badge">In costruzione — Fase 3</div>
-    <div class="info-utente" id="info-utente"></div>
-    <br>
-    <button class="btn-logout" onclick="logout()">← Esci</button>
-  </div>
+<body class="pagina-dashboard">
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-simbolo">🏛</span>
+      <span class="topbar-nome">Agorà</span>
+    </div>
+    <div class="topbar-utente">
+      <span class="topbar-saluto" id="saluto-utente"></span>
+      <span class="badge-ruolo student" id="badge-ruolo">Student</span>
+      <button class="btn-logout" id="btn-logout">Esci</button>
+    </div>
+  </header>
+
+  <main class="dashboard-layout">
+
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <a href="#sezione-upload"    class="sidebar-link attivo">
+          <span class="sidebar-icona">↑</span>
+          <span>Carica</span>
+        </a>
+        <a href="#sezione-materiali" class="sidebar-link">
+          <span class="sidebar-icona">◫</span>
+          <span>Materiali</span>
+        </a>
+      </nav>
+      <div class="sidebar-stats">
+        <div class="stat-item">
+          <span class="stat-numero" id="stat-totale">—</span>
+          <span class="stat-label">Materiali</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-numero" id="stat-materie">—</span>
+          <span class="stat-label">Materie</span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="dashboard-contenuto">
+
+      <!-- SEZIONE UPLOAD -->
+      <section id="sezione-upload" class="sezione-card">
+        <div class="sezione-intestazione">
+          <h2 class="sezione-titolo">Carica un materiale</h2>
+          <p class="sezione-sottotitolo">Formati accettati: <strong>PDF</strong>, <strong>PNG</strong>, <strong>JPG</strong>, <strong>MP3</strong> — max 20 MB</p>
+        </div>
+
+        <div id="feedback-upload" class="messaggio-feedback" role="alert" aria-live="polite"></div>
+
+        <form id="form-upload" novalidate>
+
+          <div class="zona-upload" id="zona-upload">
+            <input type="file" id="input-file" name="file" accept=".pdf,.png,.jpg,.jpeg,.mp3" class="input-file-nascosto" />
+            <div class="zona-upload-contenuto" id="zona-upload-contenuto">
+              <div class="zona-icona">⬆</div>
+              <p class="zona-testo-principale">Trascina il file qui</p>
+              <p class="zona-testo-secondario">oppure</p>
+              <button type="button" class="btn-sfoglia" id="btn-sfoglia">Sfoglia file</button>
+            </div>
+            <div class="zona-file-selezionato" id="zona-file-selezionato" style="display:none;">
+              <span class="file-icona" id="file-icona-tipo">📄</span>
+              <div class="file-dettagli">
+                <span class="file-nome" id="file-nome-display"></span>
+                <span class="file-dimensione" id="file-dimensione-display"></span>
+              </div>
+              <button type="button" class="btn-rimuovi-file" id="btn-rimuovi-file" aria-label="Rimuovi file">✕</button>
+            </div>
+          </div>
+
+          <div class="form-upload-campi">
+            <div class="gruppo-campo">
+              <label for="upload-titolo">Titolo del materiale <span class="obbligatorio">*</span></label>
+              <input type="text" id="upload-titolo" name="titolo" placeholder="es. Appunti sulla Rivoluzione Francese" maxlength="120" required />
+            </div>
+            <div class="gruppo-campo">
+              <label for="upload-materia">Materia <span class="obbligatorio">*</span></label>
+              <div class="select-wrapper">
+                <select id="upload-materia" name="materia" required>
+                  <option value="" disabled selected>Seleziona una materia</option>
+                  <option value="Matematica">Matematica</option>
+                  <option value="Italiano">Italiano</option>
+                  <option value="Storia">Storia</option>
+                  <option value="Scienze">Scienze</option>
+                  <option value="Fisica">Fisica</option>
+                  <option value="Chimica">Chimica</option>
+                  <option value="Inglese">Inglese</option>
+                  <option value="Filosofia">Filosofia</option>
+                  <option value="Arte">Arte</option>
+                  <option value="Musica">Musica</option>
+                  <option value="Educazione Fisica">Educazione Fisica</option>
+                  <option value="Informatica">Informatica</option>
+                  <option value="Altro">Altro</option>
+                </select>
+                <span class="select-freccia">›</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primario btn-upload" id="btn-upload">
+            <span>Carica materiale</span>
+          </button>
+
+        </form>
+      </section>
+
+      <!-- SEZIONE MATERIALI -->
+      <section id="sezione-materiali" class="sezione-card">
+        <div class="sezione-intestazione sezione-intestazione-flex">
+          <div>
+            <h2 class="sezione-titolo">Materiali disponibili</h2>
+            <p class="sezione-sottotitolo">Tutti i materiali caricati dalla comunità</p>
+          </div>
+          <div class="filtri-materia" id="filtri-materia"></div>
+        </div>
+
+        <div id="stato-materiali" class="stato-lista">
+          <div class="spinner-classico"></div>
+          <p>Caricamento materiali…</p>
+        </div>
+
+        <div id="griglia-materiali" class="griglia-materiali" style="display:none;"></div>
+
+        <div id="stato-vuoto" class="stato-vuoto" style="display:none;">
+          <span class="stato-vuoto-icona">📭</span>
+          <p class="stato-vuoto-testo">Nessun materiale ancora caricato.</p>
+          <p class="stato-vuoto-sub">Sii il primo a contribuire!</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
 
   <script src="/js/api.js"></script>
-  <script>
-    // Protezione: se non autenticato, rimanda al login
-    const utente = getUtenteSessione();
-    if (!utente) {
-      window.location.href = '/index.html';
-    } else if (utente.ruolo === 'Admin') {
-      window.location.href = '/admin.html';
-    } else {
-      document.getElementById('info-utente').innerHTML =
-        `Accesso come <strong>${utente.username}</strong> &mdash; Ruolo: <strong>${utente.ruolo}</strong>`;
-    }
-
-    function logout() {
-      cancellaSessione();
-      window.location.href = '/index.html';
-    }
-  </script>
+  <script src="/js/dashboard.js"></script>
 </body>
 </html>
