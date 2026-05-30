@@ -1,7 +1,7 @@
 /**
- * AGORÀ — api.js v3
+ * AGORÀ — api.js v4
  * Layer di comunicazione con il backend.
- * Gestisce: fetch JSON, upload FormData, sessione localStorage, redirect.
+ * Gestisce: autenticazione, upload, materiali, admin IAM.
  */
 
 const API_BASE = '';
@@ -31,9 +31,7 @@ function getUtenteSessione() {
   try {
     const raw = localStorage.getItem(SESSION_KEYS.utente);
     return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function reindirizzaPerRuolo(ruolo) {
@@ -41,19 +39,27 @@ function reindirizzaPerRuolo(ruolo) {
 }
 
 // ─────────────────────────────────────────────
-//  HELPER FETCH (JSON)
+//  HELPER FETCH — JSON
 // ─────────────────────────────────────────────
-async function chiamataAPI(endpoint, metodo = 'GET', corpo = null) {
+async function chiamataAPI(endpoint, metodo = 'GET', corpo = null, headersExtra = {}) {
   const opzioni = {
-    method: metodo,
-    headers: { 'Content-Type': 'application/json' },
+    method:  metodo,
+    headers: { 'Content-Type': 'application/json', ...headersExtra },
   };
   if (corpo) opzioni.body = JSON.stringify(corpo);
-
   const risposta = await fetch(`${API_BASE}${endpoint}`, opzioni);
   const dati = await risposta.json();
   dati._statusCode = risposta.status;
   return dati;
+}
+
+/**
+ * Aggiunge automaticamente l'header X-Username per le rotte admin.
+ * Il server verifica il ruolo nel DB a ogni richiesta.
+ */
+function headersAdmin() {
+  const username = localStorage.getItem(SESSION_KEYS.username);
+  return username ? { 'X-Username': username } : {};
 }
 
 // ─────────────────────────────────────────────
@@ -91,16 +97,6 @@ async function registra(username, password, nome = '', cognome = '', email = '')
 // ─────────────────────────────────────────────
 //  MATERIALI
 // ─────────────────────────────────────────────
-
-/**
- * Carica un file sul server usando FormData.
- * Necessario perché i file binari non possono essere inviati come JSON.
- *
- * @param {File}   file     - Oggetto File dall'input HTML
- * @param {string} titolo   - Titolo testuale del materiale
- * @param {string} materia  - Materia scolastica
- * @param {string} username - Username dell'autore
- */
 async function caricaMateriale(file, titolo, materia, username) {
   try {
     const formData = new FormData();
@@ -108,40 +104,55 @@ async function caricaMateriale(file, titolo, materia, username) {
     formData.append('titolo',   titolo);
     formData.append('materia',  materia);
     formData.append('username', username);
-
-    // NON impostare Content-Type manualmente con FormData:
-    // il browser lo imposta automaticamente con il boundary corretto.
-    const risposta = await fetch('/api/materials/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
+    const risposta = await fetch('/api/materials/upload', { method: 'POST', body: formData });
     const dati = await risposta.json();
     dati._statusCode = risposta.status;
     return dati;
-
-  } catch (err) {
-    console.error('[API] Errore upload:', err);
+  } catch {
     return { successo: false, messaggio: 'Errore di rete durante il caricamento.' };
   }
 }
 
-/**
- * Recupera la lista completa dei materiali dal server.
- * @returns {Promise<{successo: boolean, dati: Array}>}
- */
 async function getMateriali() {
-  try {
-    return await chiamataAPI('/api/materials', 'GET');
-  } catch {
-    return { successo: false, dati: [], messaggio: 'Impossibile caricare i materiali.' };
-  }
+  try { return await chiamataAPI('/api/materials', 'GET'); }
+  catch { return { successo: false, dati: [] }; }
 }
 
-async function controllaStatus() {
+// ─────────────────────────────────────────────
+//  ADMIN — IAM
+// ─────────────────────────────────────────────
+
+/**
+ * Recupera tutti gli utenti (senza password). Solo Admin.
+ */
+async function adminGetUtenti() {
+  try { return await chiamataAPI('/api/admin/users', 'GET', null, headersAdmin()); }
+  catch { return { successo: false, dati: [] }; }
+}
+
+/**
+ * Recupera il log di sistema completo. Solo Admin.
+ */
+async function adminGetLogs() {
+  try { return await chiamataAPI('/api/admin/logs', 'GET', null, headersAdmin()); }
+  catch { return { successo: false, dati: [] }; }
+}
+
+/**
+ * Aggiorna ruolo e/o stato di un utente. Solo Admin.
+ * @param {string} targetUsername  - Username dell'utente da modificare
+ * @param {string} nuovoRuolo      - 'Student' | 'Admin'
+ * @param {string} nuovoStato      - 'Active' | 'Banned'
+ */
+async function adminAggiornaUtente(targetUsername, nuovoRuolo, nuovoStato) {
   try {
-    return await chiamataAPI('/api/status', 'GET');
+    return await chiamataAPI(
+      '/api/admin/update-user',
+      'POST',
+      { targetUsername, nuovoRuolo, nuovoStato },
+      headersAdmin()
+    );
   } catch {
-    return { successo: false, messaggio: 'Server non raggiungibile.' };
+    return { successo: false, messaggio: 'Errore di rete.' };
   }
 }

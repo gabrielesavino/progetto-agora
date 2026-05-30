@@ -5,108 +5,139 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Agorà — Pannello Amministrazione</title>
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>" />
-  <style>
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-    }
-    .costruzione {
-      max-width: 480px;
-      padding: 3rem 2rem;
-    }
-    .costruzione .simbolo {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 1.5rem;
-    }
-    .costruzione h1 {
-      font-family: var(--font-display);
-      font-size: 2.8rem;
-      font-weight: 300;
-      margin-bottom: 1rem;
-    }
-    .costruzione p {
-      font-size: 0.9rem;
-      color: var(--colore-testo-leggero);
-      line-height: 1.7;
-    }
-    .fase-badge {
-      display: inline-block;
-      margin-top: 1.5rem;
-      padding: 4px 14px;
-      background: rgba(194,65,12,0.1);
-      color: var(--colore-terracotta);
-      font-size: 0.68rem;
-      font-weight: 500;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      border-radius: 2px;
-    }
-    .btn-logout {
-      display: inline-block;
-      margin-top: 2rem;
-      padding: 0.6rem 1.5rem;
-      background: none;
-      border: 1px solid var(--colore-bordo);
-      border-radius: 3px;
-      font-family: var(--font-body);
-      font-size: 0.73rem;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--colore-testo-leggero);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-logout:hover {
-      border-color: var(--colore-testo);
-      color: var(--colore-testo);
-    }
-    .info-utente {
-      margin-top: 1rem;
-      font-size: 0.8rem;
-      color: var(--colore-testo-leggero);
-    }
-    .info-utente strong {
-      color: var(--colore-testo);
-    }
-  </style>
 </head>
-<body>
-  <div class="costruzione">
-    <span class="simbolo">⚙️</span>
-    <h1>Pannello IAM</h1>
-    <p>
-      Da qui potrai gestire gli utenti, modificare i ruoli e gli stati degli account,
-      e consultare il log completo di tutti gli eventi di sistema.
-    </p>
-    <div class="fase-badge">In costruzione — Fase 3</div>
-    <div class="info-utente" id="info-utente"></div>
-    <br>
-    <button class="btn-logout" onclick="logout()">← Esci</button>
-  </div>
+<body class="pagina-admin">
+
+  <!-- ══ TOPBAR ══════════════════════════════════════════════════ -->
+  <header class="admin-topbar">
+    <div class="topbar-brand">
+      <span class="topbar-simbolo">🏛</span>
+      <span class="topbar-nome">Agorà</span>
+      <span class="topbar-sezione">/ Pannello Amministrazione</span>
+    </div>
+    <div class="topbar-utente">
+      <span class="topbar-saluto" id="saluto-admin"></span>
+      <span class="badge-ruolo admin">Admin</span>
+      <button class="btn-logout" id="btn-logout">Esci</button>
+    </div>
+  </header>
+
+  <!-- ══ LAYOUT PRINCIPALE ══════════════════════════════════════ -->
+  <main class="admin-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+      <nav class="sidebar-nav">
+        <a href="#sezione-utenti" class="sidebar-link attivo" data-sezione="utenti">
+          <span class="sidebar-icona">◈</span>
+          <span>Identità</span>
+        </a>
+        <a href="#sezione-logs" class="sidebar-link" data-sezione="logs">
+          <span class="sidebar-icona">≡</span>
+          <span>Registro Audit</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-stats-admin">
+        <div class="stat-admin">
+          <span class="stat-numero" id="stat-utenti">—</span>
+          <span class="stat-label">Utenti</span>
+        </div>
+        <div class="stat-admin">
+          <span class="stat-numero" id="stat-eventi">—</span>
+          <span class="stat-label">Eventi log</span>
+        </div>
+        <div class="stat-admin">
+          <span class="stat-numero" id="stat-banned">—</span>
+          <span class="stat-label">Sospesi</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENUTO -->
+    <div class="admin-contenuto">
+
+      <!-- Feedback globale admin -->
+      <div id="feedback-admin" class="messaggio-feedback admin-feedback" role="alert" aria-live="polite"></div>
+
+      <!-- ══ SEZIONE 1: GESTIONE IDENTITÀ ══════════════════════ -->
+      <section id="sezione-utenti" class="admin-sezione">
+
+        <div class="admin-sezione-header">
+          <div>
+            <h2 class="admin-titolo">Gestione Identità</h2>
+            <p class="admin-sottotitolo">
+              Modifica ruoli e stati degli account. Ogni modifica viene registrata nel log di audit.
+            </p>
+          </div>
+          <button class="btn-aggiorna" id="btn-aggiorna-utenti" title="Ricarica lista utenti">
+            ↺ Aggiorna
+          </button>
+        </div>
+
+        <!-- Stato caricamento -->
+        <div id="stato-utenti" class="stato-lista-admin">
+          <div class="spinner-admin"></div>
+          <span>Caricamento utenti…</span>
+        </div>
+
+        <!-- Tabella utenti -->
+        <div class="tabella-wrapper" id="tabella-utenti-wrapper" style="display:none;">
+          <table class="tabella-utenti" id="tabella-utenti">
+            <thead>
+              <tr>
+                <th>Utente</th>
+                <th>Email</th>
+                <th>Registrato il</th>
+                <th>Ruolo</th>
+                <th>Stato</th>
+                <th>Azione</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-utenti">
+              <!-- Righe generate da admin.js -->
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+
+      <!-- ══ SEZIONE 2: REGISTRO DI AUDIT ══════════════════════ -->
+      <section id="sezione-logs" class="admin-sezione">
+
+        <div class="admin-sezione-header">
+          <div>
+            <h2 class="admin-titolo">Registro di Auditing</h2>
+            <p class="admin-sottotitolo">
+              Cronologia completa degli eventi di sistema. Gli eventi critici sono evidenziati.
+            </p>
+          </div>
+          <div class="log-filtri" id="log-filtri">
+            <button class="filtro-log-btn attivo" data-filtro="tutti">Tutti</button>
+            <button class="filtro-log-btn" data-filtro="critico">Critici</button>
+            <button class="filtro-log-btn" data-filtro="login">Login</button>
+            <button class="filtro-log-btn" data-filtro="upload">Upload</button>
+            <button class="filtro-log-btn" data-filtro="iam">IAM</button>
+          </div>
+        </div>
+
+        <!-- Stato caricamento -->
+        <div id="stato-logs" class="stato-lista-admin">
+          <div class="spinner-admin"></div>
+          <span>Caricamento log…</span>
+        </div>
+
+        <!-- Lista log -->
+        <div class="log-lista" id="log-lista" style="display:none;"></div>
+
+      </section>
+
+    </div><!-- /admin-contenuto -->
+  </main>
 
   <script src="/js/api.js"></script>
-  <script>
-    // Protezione: solo gli Admin possono accedere
-    const utente = getUtenteSessione();
-    if (!utente) {
-      window.location.href = '/index.html';
-    } else if (utente.ruolo !== 'Admin') {
-      window.location.href = '/dashboard.html';
-    } else {
-      document.getElementById('info-utente').innerHTML =
-        `Accesso come <strong>${utente.username}</strong> &mdash; Ruolo: <strong>${utente.ruolo}</strong>`;
-    }
-
-    function logout() {
-      cancellaSessione();
-      window.location.href = '/index.html';
-    }
-  </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>
