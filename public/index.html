@@ -4,25 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Agorà — Accesso</title>
-  <meta name="description" content="Piattaforma scolastica Agorà: gestione degli accessi e condivisione di materiali didattici." />
+  <meta name="description" content="Piattaforma internazionale per studenti e expat." />
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/nations.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>" />
 </head>
 <body>
 
 <main class="pagina-login">
 
-  <!-- ═══════════════════════════════════════════
-       PANNELLO SINISTRO — Identità visiva
-  ══════════════════════════════════════════════ -->
+  <!-- PANNELLO SINISTRO -->
   <aside class="pannello-decorativo" aria-hidden="true">
-
     <div class="brand-logo">
       <span class="simbolo">🏛</span>
       <h1>Agorà</h1>
-      <p class="sottotitolo">Piattaforma Didattica</p>
+      <p class="sottotitolo">Piattaforma Internazionale</p>
     </div>
-
     <div class="citazione-classica">
       <blockquote>
         La radice dell'educazione è amara,<br>
@@ -30,195 +27,142 @@
       </blockquote>
       <cite>— Aristotele</cite>
     </div>
-
-    <!-- Colonne decorative in stile tempio -->
     <div class="colonne-decorative" aria-hidden="true">
       <div class="colonna"></div>
       <div class="colonna"></div>
       <div class="colonna"></div>
     </div>
-
   </aside>
 
-  <!-- ═══════════════════════════════════════════
-       PANNELLO DESTRO — Form di accesso
-  ══════════════════════════════════════════════ -->
+  <!-- PANNELLO DESTRO -->
   <section class="pannello-form">
     <div class="contenitore-form">
 
       <div class="intestazione-form">
         <h2>Benvenuto</h2>
-        <p>Accedi per continuare verso l'agorà digitale.</p>
+        <p>Accedi per entrare nella comunità internazionale di Agorà.</p>
       </div>
 
-      <!-- Navigazione Tab -->
-      <nav class="nav-tab" role="tablist" aria-label="Modalità di accesso">
-        <button
-          class="tab-btn attivo"
-          role="tab"
-          aria-selected="true"
-          aria-controls="tab-login"
-          data-tab="login"
-        >
+      <nav class="nav-tab" role="tablist">
+        <button class="tab-btn attivo" role="tab" aria-selected="true" aria-controls="tab-login" data-tab="login">
           Accedi
         </button>
-        <button
-          class="tab-btn"
-          role="tab"
-          aria-selected="false"
-          aria-controls="tab-registra"
-          data-tab="registra"
-        >
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-registra" data-tab="registra">
           Registrati
         </button>
       </nav>
 
-      <!-- ─────────────────────────────────────
-           TAB 1: LOGIN
-      ────────────────────────────────────── -->
-      <div
-        id="tab-login"
-        class="pannello-tab attivo"
-        role="tabpanel"
-        aria-labelledby="tab-btn-login"
-      >
-        <!-- Feedback visivo -->
-        <div
-          id="feedback-login"
-          class="messaggio-feedback"
-          role="alert"
-          aria-live="polite"
-        ></div>
+      <!-- ── TAB LOGIN ───────────────────── -->
+      <div id="tab-login" class="pannello-tab attivo" role="tabpanel">
+
+        <div id="feedback-login" class="messaggio-feedback" role="alert" aria-live="polite"></div>
 
         <form id="form-login" novalidate autocomplete="on">
-
           <div class="gruppo-campo">
             <label for="login-username">Username</label>
-            <input
-              type="text"
-              id="login-username"
-              name="username"
-              placeholder="es. marco.rossi"
-              autocomplete="username"
-              required
-              minlength="3"
-            />
+            <input type="text" id="login-username" name="username"
+              placeholder="es. marco.rossi" autocomplete="username" required minlength="3" />
           </div>
-
           <div class="gruppo-campo">
             <label for="login-password">Password</label>
-            <input
-              type="password"
-              id="login-password"
-              name="password"
-              placeholder="La tua password"
-              autocomplete="current-password"
-              required
-            />
+            <input type="password" id="login-password" name="password"
+              placeholder="La tua password" autocomplete="current-password" required />
           </div>
-
           <button type="submit" class="btn-primario" id="btn-login">
             <span>Entra</span>
           </button>
-
         </form>
 
         <div class="ornamento">✦ ✦ ✦</div>
-
-        <p style="font-size:0.78rem; color: var(--colore-testo-leggero); text-align:center;">
+        <p style="font-size:0.78rem; color:var(--colore-testo-leggero); text-align:center;">
           Non hai ancora un account?
-          <button
-            type="button"
+          <button type="button"
             onclick="document.querySelector('[data-tab=registra]').click()"
-            style="background:none; border:none; color: var(--colore-egeo); cursor:pointer; font-family: var(--font-body); font-size:inherit; font-weight:400; padding:0; text-decoration: underline; text-underline-offset: 3px;"
-          >
+            style="background:none;border:none;color:var(--colore-egeo);cursor:pointer;
+                   font-family:var(--font-body);font-size:inherit;font-weight:400;
+                   padding:0;text-decoration:underline;text-underline-offset:3px;">
             Crea uno qui
           </button>
         </p>
+      </div>
 
-      </div><!-- /tab-login -->
+      <!-- ── TAB REGISTRAZIONE ──────────── -->
+      <div id="tab-registra" class="pannello-tab" role="tabpanel">
 
-      <!-- ─────────────────────────────────────
-           TAB 2: REGISTRAZIONE
-      ────────────────────────────────────── -->
-      <div
-        id="tab-registra"
-        class="pannello-tab"
-        role="tabpanel"
-        aria-labelledby="tab-btn-registra"
-      >
-        <!-- Feedback visivo -->
-        <div
-          id="feedback-registra"
-          class="messaggio-feedback"
-          role="alert"
-          aria-live="polite"
-        ></div>
+        <div id="feedback-registra" class="messaggio-feedback" role="alert" aria-live="polite"></div>
 
         <form id="form-registra" novalidate autocomplete="off">
 
-          <!-- Riga nome / cognome affiancati -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap: 1rem;">
+          <!-- Nome / Cognome -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
             <div class="gruppo-campo" style="margin-bottom:0;">
               <label for="reg-nome">Nome</label>
-              <input
-                type="text"
-                id="reg-nome"
-                name="nome"
-                placeholder="Marco"
-                autocomplete="given-name"
-              />
+              <input type="text" id="reg-nome" name="nome" placeholder="Marco" autocomplete="given-name" />
             </div>
             <div class="gruppo-campo" style="margin-bottom:0;">
               <label for="reg-cognome">Cognome</label>
-              <input
-                type="text"
-                id="reg-cognome"
-                name="cognome"
-                placeholder="Rossi"
-                autocomplete="family-name"
-              />
+              <input type="text" id="reg-cognome" name="cognome" placeholder="Rossi" autocomplete="family-name" />
             </div>
           </div>
+          <div style="height:var(--spazio-l);"></div>
 
-          <!-- Spazio dopo la riga doppia -->
-          <div style="height: var(--spazio-l);"></div>
-
+          <!-- Email -->
           <div class="gruppo-campo">
-            <label for="reg-email">Email <span style="color:var(--colore-testo-leggero); font-weight:300;">(opzionale)</span></label>
-            <input
-              type="email"
-              id="reg-email"
-              name="email"
-              placeholder="marco@scuola.edu"
-              autocomplete="email"
-            />
+            <label for="reg-email">
+              Email <span style="color:var(--colore-testo-leggero);font-weight:300;">(opzionale)</span>
+            </label>
+            <input type="email" id="reg-email" name="email" placeholder="marco@esempio.com" autocomplete="email" />
           </div>
 
+          <!-- Nazionalità / Community — nationality picker -->
           <div class="gruppo-campo">
-            <label for="reg-username">Username <span style="color:var(--colore-terracotta);">*</span></label>
-            <input
-              type="text"
-              id="reg-username"
-              name="username"
-              placeholder="minimo 3 caratteri"
-              autocomplete="off"
-              required
-              minlength="3"
-            />
+            <label>
+              Nazionalità / Community
+              <span style="color:var(--colore-testo-leggero);font-weight:300;">(opzionale)</span>
+            </label>
+
+            <div id="nationality-picker" class="nat-picker" role="combobox"
+                 aria-haspopup="listbox" aria-expanded="false">
+
+              <!-- Display: quello che l'utente vede -->
+              <div id="nationality-display" class="nat-display" tabindex="0"
+                   aria-label="Seleziona nazionalità">
+                <span id="nationality-flag" class="nat-flag">🌐</span>
+                <span id="nationality-label" class="nat-testo-placeholder">Seleziona la tua nazione…</span>
+                <span class="nat-chevron">›</span>
+              </div>
+
+              <!-- Dropdown ricercabile -->
+              <div id="nationality-dropdown" class="nat-dropdown" style="display:none;" role="listbox">
+                <div class="nat-search-wrap">
+                  <span class="nat-search-icona">⌕</span>
+                  <input type="text" id="nationality-search" class="nat-search"
+                         placeholder="Cerca nazione…" autocomplete="off" aria-label="Cerca nazione" />
+                </div>
+                <div id="nationality-options" class="nat-options"></div>
+              </div>
+            </div>
+
+            <!-- Campo nascosto che viene effettivamente inviato al server -->
+            <input type="hidden" id="reg-nationality" name="nationality" />
           </div>
 
+          <!-- Username -->
           <div class="gruppo-campo">
-            <label for="reg-password">Password <span style="color:var(--colore-terracotta);">*</span></label>
-            <input
-              type="password"
-              id="reg-password"
-              name="password"
-              placeholder="minimo 6 caratteri"
-              autocomplete="new-password"
-              required
-              minlength="6"
-            />
+            <label for="reg-username">
+              Username <span style="color:var(--colore-terracotta);">*</span>
+            </label>
+            <input type="text" id="reg-username" name="username"
+              placeholder="minimo 3 caratteri" autocomplete="off" required minlength="3" />
+          </div>
+
+          <!-- Password -->
+          <div class="gruppo-campo">
+            <label for="reg-password">
+              Password <span style="color:var(--colore-terracotta);">*</span>
+            </label>
+            <input type="password" id="reg-password" name="password"
+              placeholder="minimo 6 caratteri" autocomplete="new-password" required minlength="6" />
           </div>
 
           <button type="submit" class="btn-primario" id="btn-registra">
@@ -228,10 +172,8 @@
         </form>
 
         <div class="footer-form">
-          <p>
-            Registrandoti accetti le politiche di utilizzo della piattaforma.<br>
-            Il tuo ruolo iniziale sarà <strong>Studente</strong>.
-          </p>
+          <p>Registrandoti accetti le politiche di utilizzo della piattaforma.<br>
+             Il tuo ruolo iniziale sarà <strong>Studente</strong>.</p>
         </div>
 
       </div><!-- /tab-registra -->
@@ -241,9 +183,8 @@
 
 </main>
 
-<!-- Script: prima api.js (funzioni fetch), poi main.js (controller UI) -->
+<script src="/js/nations.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/main.js"></script>
-
 </body>
 </html>

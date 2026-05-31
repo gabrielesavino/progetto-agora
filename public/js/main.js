@@ -1,74 +1,59 @@
 /**
- * AGORÀ — main.js
- * Controllore dell'interfaccia utente per la pagina di accesso (index.html).
- * Gestisce: cambio tab, submit dei form, feedback visivo, validazione.
+ * AGORÀ — main.js v5.1
+ * Controller UI per la pagina di accesso (index.html).
+ * Fix: inizializzaNationalityPicker chiamata esplicitamente qui.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ─────────────────────────────────────────
-  //  CONTROLLO SESSIONE ATTIVA
-  //  Se l'utente è già loggato, redirect diretto.
-  // ─────────────────────────────────────────
+  // ── FIX NATIONALITY PICKER ────────────────
+  // nations.js espone la funzione ma non la chiama autonomamente.
+  // Va chiamata qui, quando il DOM è sicuramente pronto.
+  if (typeof inizializzaNationalityPicker === 'function') {
+    inizializzaNationalityPicker();
+  }
+
+  // Redirect se già loggato
   const utenteEsistente = getUtenteSessione();
   if (utenteEsistente) {
     reindirizzaPerRuolo(utenteEsistente.ruolo);
     return;
   }
 
-  // ─────────────────────────────────────────
-  //  RIFERIMENTI DOM
-  // ─────────────────────────────────────────
+  // ── TAB ──────────────────────────────────
   const tabBtns     = document.querySelectorAll('.tab-btn');
   const pannelliTab = document.querySelectorAll('.pannello-tab');
 
-  // Form Login
+  tabBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      tabBtns.forEach((b)     => b.classList.remove('attivo'));
+      pannelliTab.forEach((p) => p.classList.remove('attivo'));
+      btn.classList.add('attivo');
+      document.getElementById(`tab-${target}`).classList.add('attivo');
+      nascondiMessaggio(feedbackLogin);
+      nascondiMessaggio(feedbackRegistra);
+    });
+  });
+
+  // ── RIFERIMENTI DOM ───────────────────────
   const formLogin       = document.getElementById('form-login');
   const inputLoginUser  = document.getElementById('login-username');
   const inputLoginPass  = document.getElementById('login-password');
   const btnLogin        = document.getElementById('btn-login');
   const feedbackLogin   = document.getElementById('feedback-login');
 
-  // Form Registrazione
-  const formRegistra      = document.getElementById('form-registra');
-  const inputRegUser      = document.getElementById('reg-username');
-  const inputRegPass      = document.getElementById('reg-password');
-  const inputRegNome      = document.getElementById('reg-nome');
-  const inputRegCognome   = document.getElementById('reg-cognome');
-  const inputRegEmail     = document.getElementById('reg-email');
-  const btnRegistra       = document.getElementById('btn-registra');
-  const feedbackRegistra  = document.getElementById('feedback-registra');
+  const formRegistra     = document.getElementById('form-registra');
+  const inputRegUser     = document.getElementById('reg-username');
+  const inputRegPass     = document.getElementById('reg-password');
+  const inputRegNome     = document.getElementById('reg-nome');
+  const inputRegCognome  = document.getElementById('reg-cognome');
+  const inputRegEmail    = document.getElementById('reg-email');
+  const inputNationality = document.getElementById('reg-nationality');
+  const btnRegistra      = document.getElementById('btn-registra');
+  const feedbackRegistra = document.getElementById('feedback-registra');
 
-  // ─────────────────────────────────────────
-  //  SISTEMA A TAB
-  // ─────────────────────────────────────────
-  tabBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const target = btn.dataset.tab;
-
-      tabBtns.forEach((b) => b.classList.remove('attivo'));
-      pannelliTab.forEach((p) => p.classList.remove('attivo'));
-
-      btn.classList.add('attivo');
-      document.getElementById(`tab-${target}`).classList.add('attivo');
-
-      // Pulisce i messaggi di feedback al cambio tab
-      nascondiMessaggio(feedbackLogin);
-      nascondiMessaggio(feedbackRegistra);
-    });
-  });
-
-  // ─────────────────────────────────────────
-  //  UTILITY UI: Messaggi di feedback
-  // ─────────────────────────────────────────
-
-  /**
-   * Mostra un messaggio di feedback nel contenitore indicato.
-   * @param {HTMLElement} el       - Elemento contenitore del feedback
-   * @param {string}      testo    - Testo da mostrare
-   * @param {'successo'|'errore'} tipo
-   * @param {string}      icona    - Emoji o simbolo
-   */
+  // ── UTILITY FEEDBACK ─────────────────────
   function mostraMessaggio(el, testo, tipo, icona = '') {
     el.className = `messaggio-feedback ${tipo} visibile`;
     el.innerHTML = icona
@@ -81,46 +66,17 @@ document.addEventListener('DOMContentLoaded', () => {
     el.innerHTML = '';
   }
 
-  /**
-   * Imposta lo stato di caricamento su un bottone.
-   * @param {HTMLButtonElement} btn
-   * @param {boolean}           attivo
-   * @param {string}            testoOriginale
-   */
-  function setCaricamento(btn, attivo, testoOriginale) {
-    if (attivo) {
-      btn.classList.add('caricamento');
-      btn.querySelector('span').textContent = 'Accesso in corso';
-    } else {
-      btn.classList.remove('caricamento');
-      btn.querySelector('span').textContent = testoOriginale;
-    }
+  function setCaricamento(btn, attivo, testoOrig) {
+    btn.classList.toggle('caricamento', attivo);
+    btn.disabled = attivo;
+    btn.querySelector('span').textContent = attivo ? 'Caricamento…' : testoOrig;
   }
 
-  // ─────────────────────────────────────────
-  //  VALIDAZIONE LOCALE
-  // ─────────────────────────────────────────
-
-  function validaCampo(input, condizione, messaggioErrore) {
-    if (!condizione) {
-      input.classList.add('errore');
-      return messaggioErrore;
-    }
-    input.classList.remove('errore');
-    return null;
-  }
-
-  // Rimuovi il bordo errore non appena l'utente inizia a digitare
-  [inputLoginUser, inputLoginPass, inputRegUser, inputRegPass,
-   inputRegNome, inputRegCognome, inputRegEmail].forEach((input) => {
-    if (input) {
-      input.addEventListener('input', () => input.classList.remove('errore'));
-    }
+  [inputLoginUser, inputLoginPass, inputRegUser, inputRegPass].forEach((el) => {
+    if (el) el.addEventListener('input', () => el.classList.remove('errore'));
   });
 
-  // ─────────────────────────────────────────
-  //  FORM: LOGIN
-  // ─────────────────────────────────────────
+  // ── FORM LOGIN ────────────────────────────
   formLogin.addEventListener('submit', async (e) => {
     e.preventDefault();
     nascondiMessaggio(feedbackLogin);
@@ -128,31 +84,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = inputLoginUser.value.trim();
     const password = inputLoginPass.value;
 
-    // Validazione locale
-    const erroreUser = validaCampo(inputLoginUser, username.length >= 3,
-      'Username non valido.');
-    const errorePass = validaCampo(inputLoginPass, password.length >= 1,
-      'Inserisci la password.');
-
-    const primoErrore = erroreUser || errorePass;
-    if (primoErrore) {
-      mostraMessaggio(feedbackLogin, primoErrore, 'errore', '⚠');
+    if (username.length < 3) {
+      inputLoginUser.classList.add('errore');
+      mostraMessaggio(feedbackLogin, 'Username non valido.', 'errore', '⚠');
+      return;
+    }
+    if (!password) {
+      inputLoginPass.classList.add('errore');
+      mostraMessaggio(feedbackLogin, 'Inserisci la password.', 'errore', '⚠');
       return;
     }
 
-    // Invio al server
     setCaricamento(btnLogin, true, 'Entra');
-
     const risultato = await login(username, password);
-
     setCaricamento(btnLogin, false, 'Entra');
 
     if (!risultato.successo) {
-      const icona = risultato.bannato ? '🚫' : '✕';
-      mostraMessaggio(feedbackLogin, risultato.messaggio, 'errore', icona);
-
+      mostraMessaggio(feedbackLogin, risultato.messaggio, 'errore',
+        risultato.bannato ? '🚫' : '✕');
       if (risultato.bannato) {
-        // Sottolinea visivamente entrambi i campi per l'account bannato
         inputLoginUser.classList.add('errore');
         inputLoginPass.classList.add('errore');
       } else {
@@ -160,56 +110,42 @@ document.addEventListener('DOMContentLoaded', () => {
         inputLoginPass.classList.add('errore');
       }
     }
-    // Se il login è riuscito, api.js gestisce il redirect — nessuna azione necessaria qui
   });
 
-  // ─────────────────────────────────────────
-  //  FORM: REGISTRAZIONE
-  // ─────────────────────────────────────────
+  // ── FORM REGISTRAZIONE ───────────────────
   formRegistra.addEventListener('submit', async (e) => {
     e.preventDefault();
     nascondiMessaggio(feedbackRegistra);
 
-    const username = inputRegUser.value.trim();
-    const password = inputRegPass.value;
-    const nome     = inputRegNome    ? inputRegNome.value.trim()    : '';
-    const cognome  = inputRegCognome ? inputRegCognome.value.trim() : '';
-    const email    = inputRegEmail   ? inputRegEmail.value.trim()   : '';
+    const username    = inputRegUser.value.trim();
+    const password    = inputRegPass.value;
+    const nome        = inputRegNome     ? inputRegNome.value.trim()    : '';
+    const cognome     = inputRegCognome  ? inputRegCognome.value.trim() : '';
+    const email       = inputRegEmail    ? inputRegEmail.value.trim()   : '';
+    const nationality = inputNationality ? inputNationality.value       : '';
 
-    // Validazione locale
-    const erroriCampi = [
-      validaCampo(inputRegUser, username.length >= 3,
-        'Lo username deve contenere almeno 3 caratteri.'),
-      validaCampo(inputRegPass, password.length >= 6,
-        'La password deve contenere almeno 6 caratteri.'),
-    ].filter(Boolean);
-
-    if (erroriCampi.length > 0) {
-      mostraMessaggio(feedbackRegistra, erroriCampi[0], 'errore', '⚠');
+    if (username.length < 3) {
+      inputRegUser.classList.add('errore');
+      mostraMessaggio(feedbackRegistra, 'Username: minimo 3 caratteri.', 'errore', '⚠');
+      return;
+    }
+    if (password.length < 6) {
+      inputRegPass.classList.add('errore');
+      mostraMessaggio(feedbackRegistra, 'Password: minimo 6 caratteri.', 'errore', '⚠');
       return;
     }
 
-    // Invio al server
     setCaricamento(btnRegistra, true, 'Registrati');
-
-    const risultato = await registra(username, password, nome, cognome, email);
-
+    const risultato = await registra(username, password, nome, cognome, email, nationality);
     setCaricamento(btnRegistra, false, 'Registrati');
 
     if (risultato.successo) {
-      mostraMessaggio(
-        feedbackRegistra,
-        `${risultato.messaggio} Reindirizzamento in corso…`,
-        'successo',
-        '✓'
-      );
-      // Il redirect viene gestito da api.js dopo 1,2s
+      mostraMessaggio(feedbackRegistra,
+        `${risultato.messaggio} Reindirizzamento in corso…`, 'successo', '✓');
     } else {
       mostraMessaggio(feedbackRegistra, risultato.messaggio, 'errore', '✕');
-
-      if (risultato.messaggio.toLowerCase().includes('username')) {
+      if (risultato.messaggio.toLowerCase().includes('username'))
         inputRegUser.classList.add('errore');
-      }
     }
   });
 

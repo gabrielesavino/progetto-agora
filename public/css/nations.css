@@ -1,0 +1,194 @@
+/* ================================================================
+   AGORÀ — nations.css
+   Stili per il componente Nationality Picker ricercabile.
+   Segue la stessa estetica neoclassica di style.css.
+   ================================================================ */
+
+/* ── WRAPPER PRINCIPALE ─────────────────────────────────────────── */
+.nat-picker {
+  position: relative;
+  user-select: none;
+}
+
+/* ── DISPLAY (trigger visibile) ─────────────────────────────────── */
+.nat-display {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.72rem 1rem;
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-piccolo);
+  background: var(--colore-sfondo);
+  cursor: pointer;
+  transition: var(--transizione);
+  outline: none;
+}
+
+.nat-display:hover,
+.nat-picker[aria-expanded="true"] .nat-display {
+  border-color: var(--colore-egeo);
+  background: var(--colore-superficie);
+}
+
+.nat-picker[aria-expanded="true"] .nat-display {
+  box-shadow: 0 0 0 3px var(--colore-egeo-chiaro);
+  border-radius: var(--raggio-piccolo) var(--raggio-piccolo) 0 0;
+}
+
+.nat-picker.errore .nat-display {
+  border-color: var(--colore-errore);
+  box-shadow: 0 0 0 3px rgba(185,28,28,0.08);
+}
+
+.nat-flag {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 1.4rem;
+  text-align: center;
+}
+
+.nat-testo-placeholder {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 300;
+  color: rgba(90,99,112,0.45);
+}
+
+.nat-testo-selezionato {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 300;
+  color: var(--colore-testo);
+}
+
+.nat-chevron {
+  font-size: 1rem;
+  color: var(--colore-testo-leggero);
+  transform: rotate(90deg);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.nat-picker[aria-expanded="true"] .nat-chevron {
+  transform: rotate(-90deg);
+}
+
+/* ── DROPDOWN ───────────────────────────────────────────────────── */
+.nat-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--colore-superficie);
+  border: 1px solid var(--colore-egeo);
+  border-top: none;
+  border-radius: 0 0 var(--raggio-piccolo) var(--raggio-piccolo);
+  box-shadow: 0 8px 24px rgba(26,31,38,0.12);
+  z-index: 200;
+  overflow: hidden;
+}
+
+/* ── CAMPO RICERCA ──────────────────────────────────────────────── */
+.nat-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--colore-bordo);
+  background: var(--colore-sfondo);
+}
+
+.nat-search-icona {
+  color: var(--colore-testo-leggero);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.nat-search {
+  flex: 1;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--colore-testo);
+  outline: none;
+}
+
+.nat-search::placeholder {
+  color: rgba(90,99,112,0.45);
+}
+
+/* ── LISTA OPZIONI ──────────────────────────────────────────────── */
+.nat-options {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.nat-options::-webkit-scrollbar {
+  width: 3px;
+}
+
+.nat-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nat-options::-webkit-scrollbar-thumb {
+  background: var(--colore-bordo);
+  border-radius: 2px;
+}
+
+/* ── SINGOLA OPZIONE ────────────────────────────────────────────── */
+.nat-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.nat-option:hover {
+  background: var(--colore-egeo-chiaro);
+}
+
+.nat-option.selezionata {
+  background: var(--colore-egeo-chiaro);
+}
+
+.nat-option.selezionata .nat-nome {
+  color: var(--colore-egeo);
+  font-weight: 500;
+}
+
+.nat-bandiera {
+  font-size: 1rem;
+  width: 1.4rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.nat-nome {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--colore-testo);
+}
+
+/* Opzione "Aggiungi altra" in fondo */
+.nat-option-custom {
+  border-top: 1px solid var(--colore-bordo);
+  margin-top: 2px;
+}
+
+.nat-option-custom .nat-nome {
+  color: var(--colore-egeo);
+  font-style: italic;
+}
+
+.nat-option-custom:hover {
+  background: var(--colore-egeo-chiaro);
+}

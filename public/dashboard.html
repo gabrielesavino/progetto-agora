@@ -10,29 +10,66 @@
 </head>
 <body class="pagina-dashboard">
 
+  <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-brand">
       <span class="topbar-simbolo">🏛</span>
       <span class="topbar-nome">Agorà</span>
     </div>
-    <div class="topbar-utente">
-      <span class="topbar-saluto" id="saluto-utente"></span>
-      <span class="badge-ruolo student" id="badge-ruolo">Student</span>
-      <button class="btn-logout" id="btn-logout">Esci</button>
+
+    <!-- Account menu (Proposta A) -->
+    <div class="account-menu" id="account-menu">
+      <button class="account-trigger" id="account-trigger" aria-haspopup="true" aria-expanded="false">
+        <span class="account-avatar" id="account-avatar">?</span>
+        <span class="account-nome" id="account-nome">—</span>
+        <span class="account-chevron" aria-hidden="true">›</span>
+      </button>
+
+      <!-- Dropdown flottante -->
+      <div class="account-dropdown" id="account-dropdown" role="menu" aria-hidden="true">
+        <!-- Intestazione profilo -->
+        <div class="account-dropdown-header">
+          <div class="account-dropdown-avatar" id="dd-avatar">?</div>
+          <div class="account-dropdown-info">
+            <span class="dd-username" id="dd-username">—</span>
+            <span class="dd-email" id="dd-email"></span>
+          </div>
+        </div>
+
+        <div class="account-dropdown-body">
+          <div class="dd-riga">
+            <span class="dd-label">Ruolo</span>
+            <span class="badge-ruolo student" id="dd-ruolo">Student</span>
+          </div>
+          <div class="dd-riga">
+            <span class="dd-label">Nazionalità</span>
+            <span class="dd-valore" id="dd-nazionalita">—</span>
+          </div>
+          <div class="dd-riga">
+            <span class="dd-label">Membro dal</span>
+            <span class="dd-valore" id="dd-data">—</span>
+          </div>
+        </div>
+
+        <div class="account-dropdown-footer">
+          <button class="dd-btn-logout" id="btn-logout">
+            <span>← Esci</span>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
   <main class="dashboard-layout">
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
       <nav class="sidebar-nav">
         <a href="#sezione-upload"    class="sidebar-link attivo">
-          <span class="sidebar-icona">↑</span>
-          <span>Carica</span>
+          <span class="sidebar-icona">↑</span><span>Carica</span>
         </a>
         <a href="#sezione-materiali" class="sidebar-link">
-          <span class="sidebar-icona">◫</span>
-          <span>Materiali</span>
+          <span class="sidebar-icona">◫</span><span>Materiali</span>
         </a>
       </nav>
       <div class="sidebar-stats">
@@ -42,7 +79,7 @@
         </div>
         <div class="stat-item">
           <span class="stat-numero" id="stat-materie">—</span>
-          <span class="stat-label">Materie</span>
+          <span class="stat-label">Categorie</span>
         </div>
       </div>
     </aside>
@@ -53,15 +90,18 @@
       <section id="sezione-upload" class="sezione-card">
         <div class="sezione-intestazione">
           <h2 class="sezione-titolo">Carica un materiale</h2>
-          <p class="sezione-sottotitolo">Formati accettati: <strong>PDF</strong>, <strong>PNG</strong>, <strong>JPG</strong>, <strong>MP3</strong> — max 20 MB</p>
+          <p class="sezione-sottotitolo">
+            Formati accettati: <strong>PDF</strong>, <strong>PNG</strong>,
+            <strong>JPG</strong>, <strong>MP3</strong> — max 20 MB
+          </p>
         </div>
 
         <div id="feedback-upload" class="messaggio-feedback" role="alert" aria-live="polite"></div>
 
         <form id="form-upload" novalidate>
-
           <div class="zona-upload" id="zona-upload">
-            <input type="file" id="input-file" name="file" accept=".pdf,.png,.jpg,.jpeg,.mp3" class="input-file-nascosto" />
+            <input type="file" id="input-file" name="file"
+              accept=".pdf,.png,.jpg,.jpeg,.mp3" class="input-file-nascosto" />
             <div class="zona-upload-contenuto" id="zona-upload-contenuto">
               <div class="zona-icona">⬆</div>
               <p class="zona-testo-principale">Trascina il file qui</p>
@@ -74,55 +114,68 @@
                 <span class="file-nome" id="file-nome-display"></span>
                 <span class="file-dimensione" id="file-dimensione-display"></span>
               </div>
-              <button type="button" class="btn-rimuovi-file" id="btn-rimuovi-file" aria-label="Rimuovi file">✕</button>
+              <button type="button" class="btn-rimuovi-file" id="btn-rimuovi-file" aria-label="Rimuovi">✕</button>
             </div>
           </div>
 
           <div class="form-upload-campi">
             <div class="gruppo-campo">
-              <label for="upload-titolo">Titolo del materiale <span class="obbligatorio">*</span></label>
-              <input type="text" id="upload-titolo" name="titolo" placeholder="es. Appunti sulla Rivoluzione Francese" maxlength="120" required />
+              <label for="upload-titolo">Titolo <span class="obbligatorio">*</span></label>
+              <input type="text" id="upload-titolo" name="titolo"
+                placeholder="es. Guida all'integrazione a Rotterdam" maxlength="120" required />
             </div>
             <div class="gruppo-campo">
-              <label for="upload-materia">Materia <span class="obbligatorio">*</span></label>
+              <label for="upload-materia">Categoria <span class="obbligatorio">*</span></label>
               <div class="select-wrapper">
                 <select id="upload-materia" name="materia" required>
-                  <option value="" disabled selected>Seleziona una materia</option>
-                  <option value="Matematica">Matematica</option>
-                  <option value="Italiano">Italiano</option>
-                  <option value="Storia">Storia</option>
-                  <option value="Scienze">Scienze</option>
-                  <option value="Fisica">Fisica</option>
-                  <option value="Chimica">Chimica</option>
-                  <option value="Inglese">Inglese</option>
-                  <option value="Filosofia">Filosofia</option>
-                  <option value="Arte">Arte</option>
-                  <option value="Musica">Musica</option>
-                  <option value="Educazione Fisica">Educazione Fisica</option>
-                  <option value="Informatica">Informatica</option>
-                  <option value="Altro">Altro</option>
+                  <option value="" disabled selected>Seleziona una categoria</option>
+                  <option value="Informatica & Cloud">💻 Informatica &amp; Cloud</option>
+                  <option value="Lingue & Culture">🌐 Lingue &amp; Culture</option>
+                  <option value="Guida Expat & Integrazione">🧭 Guida Expat &amp; Integrazione</option>
+                  <option value="altro">✦ Altra categoria…</option>
                 </select>
                 <span class="select-freccia">›</span>
               </div>
             </div>
           </div>
 
+          <div class="gruppo-campo" id="campo-categoria-custom" style="display:none; margin-top:1rem;">
+            <label for="upload-categoria-custom">Nome categoria personalizzata <span class="obbligatorio">*</span></label>
+            <input type="text" id="upload-categoria-custom" name="categoriaCustom"
+              placeholder="es. Diritto del Lavoro Internazionale" maxlength="60" />
+          </div>
+
           <button type="submit" class="btn-primario btn-upload" id="btn-upload">
             <span>Carica materiale</span>
           </button>
-
         </form>
       </section>
 
       <!-- SEZIONE MATERIALI -->
       <section id="sezione-materiali" class="sezione-card">
-        <div class="sezione-intestazione sezione-intestazione-flex">
-          <div>
-            <h2 class="sezione-titolo">Materiali disponibili</h2>
-            <p class="sezione-sottotitolo">Tutti i materiali caricati dalla comunità</p>
-          </div>
-          <div class="filtri-materia" id="filtri-materia"></div>
+        <div class="sezione-intestazione">
+          <h2 class="sezione-titolo">Materiali disponibili</h2>
+          <p class="sezione-sottotitolo">Conoscenza condivisa dalla comunità internazionale</p>
         </div>
+
+        <div class="barra-ricerca-filtri">
+          <div class="ricerca-wrapper">
+            <span class="ricerca-icona">⌕</span>
+            <input type="text" id="input-ricerca" class="input-ricerca"
+              placeholder="Cerca per titolo, categoria o autore…"
+              autocomplete="off" aria-label="Cerca materiali" />
+            <button class="btn-cancella-ricerca" id="btn-cancella-ricerca"
+              style="display:none;" aria-label="Cancella ricerca">✕</button>
+          </div>
+          <div class="filtri-categoria" id="filtri-categoria">
+            <button class="filtro-cat-btn attivo" data-categoria="tutti">Tutti</button>
+            <button class="filtro-cat-btn" data-categoria="Informatica & Cloud">💻 Informatica</button>
+            <button class="filtro-cat-btn" data-categoria="Lingue & Culture">🌐 Lingue</button>
+            <button class="filtro-cat-btn" data-categoria="Guida Expat & Integrazione">🧭 Expat</button>
+          </div>
+        </div>
+
+        <div class="risultati-count" id="risultati-count" style="display:none;"></div>
 
         <div id="stato-materiali" class="stato-lista">
           <div class="spinner-classico"></div>
@@ -133,8 +186,8 @@
 
         <div id="stato-vuoto" class="stato-vuoto" style="display:none;">
           <span class="stato-vuoto-icona">📭</span>
-          <p class="stato-vuoto-testo">Nessun materiale ancora caricato.</p>
-          <p class="stato-vuoto-sub">Sii il primo a contribuire!</p>
+          <p class="stato-vuoto-testo">Nessun risultato trovato.</p>
+          <p class="stato-vuoto-sub">Prova con un termine diverso o cambia filtro.</p>
         </div>
       </section>
 
