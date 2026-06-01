@@ -21,9 +21,6 @@ if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // ─────────────────────────────────────────────
 //  CATEGORIE GLOBALI (Fase 5)
-//  Sostituiscono le vecchie materie scolastiche.
-//  "altro" consente di aggiungere categorie nuove
-//  senza modificare il server.
 // ─────────────────────────────────────────────
 const CATEGORIE_VALIDE = new Set([
   'Informatica & Cloud',
@@ -132,8 +129,8 @@ app.get('/api/status', (req, res) => {
   const logs      = readDB(DB.logs);
   res.status(200).json({
     successo: true,
-    messaggio: 'Agorà v5.0 online.',
-    applicazione: { nome: 'Agorà', versione: '5.0.0', timestamp: new Date().toISOString() },
+    messaggio: 'Agorà v6.0 online.',
+    applicazione: { nome: 'Agorà', versione: '6.0.0', timestamp: new Date().toISOString() },
     database: {
       utenti_registrati:  users.length,
       materiali_caricati: materials.length,
@@ -144,7 +141,6 @@ app.get('/api/status', (req, res) => {
 });
 
 // POST /api/register
-// Accetta ora anche il campo 'nationality'
 app.post('/api/register', (req, res) => {
   const { username, password, nome, cognome, email, nationality } = req.body;
 
@@ -170,7 +166,7 @@ app.post('/api/register', (req, res) => {
     nome:              nome        || '',
     cognome:           cognome     || '',
     email:             email       || '',
-    nationality:       nationality || '',   // ← Fase 5: nazionalità/community
+    nationality:       nationality || '',
     dataRegistrazione: new Date().toISOString(),
   };
 
@@ -221,7 +217,6 @@ app.post('/api/login', (req, res) => {
 });
 
 // POST /api/materials/upload
-// Il campo 'materia' ora accetta le 3 categorie globali (+ 'altro')
 app.post('/api/materials/upload', (req, res) => {
   upload.single('file')(req, res, (err) => {
     if (err && err.code === 'FILE_TYPE_REJECTED') {
@@ -242,7 +237,6 @@ app.post('/api/materials/upload', (req, res) => {
       return res.status(400).json({ successo: false, messaggio: 'Titolo obbligatorio.' });
     }
 
-    // Gestione categoria: accetta le 3 standard + qualsiasi stringa se "altro"
     let categoriaFinale = materia ? materia.trim() : '';
     if (materia === 'altro' && categoriaCustom && categoriaCustom.trim()) {
       categoriaFinale = categoriaCustom.trim();
@@ -359,6 +353,94 @@ app.post('/api/admin/update-user', verificaAdmin, (req, res) => {
   });
 });
 
+// ═════════════════════════════════════════════
+//  FASE 6 — FORUM
+// ═════════════════════════════════════════════
+
+const FORUM_PATH = path.join(__dirname, 'data', 'forum.json');
+
+// Inizializza forum.json se non esiste
+if (!fs.existsSync(FORUM_PATH)) {
+  writeDB(FORUM_PATH, []);
+  console.log('[FORUM] forum.json creato automaticamente.');
+}
+
+// GET /api/forum — restituisce tutti i thread (più recenti prima)
+app.get('/api/forum', (req, res) => {
+  const posts = readDB(FORUM_PATH);
+  res.status(200).json({
+    successo: true,
+    totale:   posts.length,
+    dati:     [...posts].reverse(),
+  });
+});
+
+// POST /api/forum — crea un nuovo thread
+app.post('/api/forum', (req, res) => {
+  const { titolo, categoria, messaggio, autore } = req.body;
+
+  if (!titolo || !titolo.trim())
+    return res.status(400).json({ successo: false, messaggio: 'Titolo obbligatorio.' });
+  if (!categoria || !categoria.trim())
+    return res.status(400).json({ successo: false, messaggio: 'Categoria obbligatoria.' });
+  if (!messaggio || !messaggio.trim())
+    return res.status(400).json({ successo: false, messaggio: 'Messaggio obbligatorio.' });
+
+  const posts = readDB(FORUM_PATH);
+
+  const nuovoPost = {
+    id:        generaId('post'),
+    titolo:    titolo.trim(),
+    categoria: categoria.trim(),
+    messaggio: messaggio.trim(),
+    autore:    autore || 'anonimo',
+    timestamp: new Date().toISOString(),
+    commenti:  [],
+  };
+
+  posts.push(nuovoPost);
+
+  if (!writeDB(FORUM_PATH, posts))
+    return res.status(500).json({ successo: false, messaggio: 'Errore interno nel salvataggio.' });
+
+  scriviLog('FORUM_POST_CREATED', autore || 'anonimo',
+    `ID: ${nuovoPost.id} | Categoria: ${nuovoPost.categoria} | Titolo: ${nuovoPost.titolo}`);
+
+  res.status(201).json({ successo: true, messaggio: 'Thread creato con successo.', post: nuovoPost });
+});
+
+// POST /api/forum/:id/commenti — aggiunge un commento a un thread
+app.post('/api/forum/:id/commenti', (req, res) => {
+  const { id } = req.params;
+  const { messaggio, autore } = req.body;
+
+  if (!messaggio || !messaggio.trim())
+    return res.status(400).json({ successo: false, messaggio: 'Il commento non può essere vuoto.' });
+
+  const posts = readDB(FORUM_PATH);
+  const idx   = posts.findIndex((p) => p.id === id);
+
+  if (idx === -1)
+    return res.status(404).json({ successo: false, messaggio: `Thread '${id}' non trovato.` });
+
+  const nuovoCommento = {
+    id:        generaId('cmt'),
+    messaggio: messaggio.trim(),
+    autore:    autore || 'anonimo',
+    timestamp: new Date().toISOString(),
+  };
+
+  posts[idx].commenti.push(nuovoCommento);
+
+  if (!writeDB(FORUM_PATH, posts))
+    return res.status(500).json({ successo: false, messaggio: 'Errore interno nel salvataggio.' });
+
+  scriviLog('FORUM_COMMENT_ADDED', autore || 'anonimo',
+    `Thread: ${id} | Commento: ${nuovoCommento.id}`);
+
+  res.status(201).json({ successo: true, messaggio: 'Commento aggiunto.', commento: nuovoCommento });
+});
+
 // ─────────────────────────────────────────────
 //  404
 // ─────────────────────────────────────────────
@@ -371,18 +453,18 @@ app.use((req, res) => {
 });
 
 // ─────────────────────────────────────────────
-//  AVVIO
+//  AVVIO SERVER
 // ─────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('');
   console.log('  ╔══════════════════════════════════════╗');
   console.log('  ║                                      ║');
-  console.log('  ║   🌍  AGORÀ v5.0 — Server Avviato    ║');
+  console.log('  ║   🌍  AGORÀ v6.0 — Server Avviato    ║');
   console.log('  ║                                      ║');
   console.log(`  ║   ➜  http://localhost:${PORT}            ║`);
-  console.log('  ║   ➜  Internazionale + 3 Categorie   ║');
+  console.log('  ║   ➜  Internazionale + Forum Attivo   ║');
   console.log('  ║                                      ║');
   console.log('  ╚══════════════════════════════════════╝');
   console.log('');
-  scriviLog('SERVER_START', 'sistema', `Agorà v5.0 avviato sulla porta ${PORT}`);
+  scriviLog('SERVER_START', 'sistema', `Agorà v6.0 avviato sulla porta ${PORT}`);
 });

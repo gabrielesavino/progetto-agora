@@ -1,15 +1,13 @@
 /**
- * AGORÀ — admin.js
+ * AGORÀ — admin.js (Fase 6)
  * Controller del Pannello Amministrativo.
- * Gestisce: autenticazione admin, tabella IAM, registro audit.
+ * Gestisce: autenticazione admin, tabella IAM, registro audit e STATISTICHE AVANZATE.
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
 
   // ─────────────────────────────────────────
   //  PROTEZIONE ROTTA CLIENT-SIDE
-  //  Primo livello di difesa: controlla il localStorage.
-  //  Il secondo livello è il middleware verificaAdmin sul server.
   // ─────────────────────────────────────────
   const utente = getUtenteSessione();
 
@@ -19,7 +17,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (utente.ruolo !== 'Admin') {
-    // Violazione di accesso: l'utente non è Admin
     alert('⛔ Accesso negato.\n\nQuest\'area è riservata agli amministratori.\nVerrai reindirizzato alla dashboard studente.');
     window.location.href = '/dashboard.html';
     return;
@@ -43,9 +40,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   //  RIFERIMENTI DOM
   // ─────────────────────────────────────────
   const feedbackAdmin       = document.getElementById('feedback-admin');
+  
+  // Riferimenti Nuove Statistiche (Fase 6)
   const statUtenti          = document.getElementById('stat-utenti');
-  const statEventi          = document.getElementById('stat-eventi');
-  const statBanned          = document.getElementById('stat-banned');
+  const statMateriali       = document.getElementById('stat-materiali');
+  const statPost            = document.getElementById('stat-post');
+  const statCritici         = document.getElementById('stat-critici');
+  
   const statoUtenti         = document.getElementById('stato-utenti');
   const tabellaWrapper      = document.getElementById('tabella-utenti-wrapper');
   const tbodyUtenti         = document.getElementById('tbody-utenti');
@@ -72,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? `<span class="icona">${icona}</span><span>${testo}</span>`
       : `<span>${testo}</span>`;
 
-    // Auto-nasconde dopo 5 secondi
     clearTimeout(mostraFeedback._timer);
     mostraFeedback._timer = setTimeout(() => {
       feedbackAdmin.classList.remove('visibile', 'successo', 'errore');
@@ -97,9 +97,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   //  SEZIONE 1: GESTIONE UTENTI (IAM)
   // ─────────────────────────────────────────
 
-  /**
-   * Determina la classe CSS e la label del badge stato.
-   */
   function badgeStato(stato) {
     const mappa = {
       'Active': { cls: 'active', label: '● Active' },
@@ -108,9 +105,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return mappa[stato] || { cls: '', label: stato };
   }
 
-  /**
-   * Crea una riga <tr> per un utente nella tabella IAM.
-   */
   function creaRigaUtente(u) {
     const tr = document.createElement('tr');
     tr.dataset.username = u.username;
@@ -118,9 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const iniziale    = (u.nome || u.username).charAt(0).toUpperCase();
     const nomeCompleto = [u.nome, u.cognome].filter(Boolean).join(' ') || '—';
     const { data: dataReg } = formattaDataOra(u.dataRegistrazione);
-    const statoInfo   = badgeStato(u.stato);
 
-    // Impedisce all'admin di modificare se stesso (safety UI)
     const isSelf = u.username === utente.username;
 
     tr.innerHTML = `
@@ -172,7 +164,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       </td>
     `;
 
-    // Evidenzia select se il valore cambia
     tr.querySelectorAll('.select-admin').forEach((sel) => {
       sel.addEventListener('change', () => {
         const modificato = sel.value !== sel.dataset.originale;
@@ -180,7 +171,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // Handler pulsante Salva
     const btnSalva = tr.querySelector('.btn-salva-riga');
     if (btnSalva && !isSelf) {
       btnSalva.addEventListener('click', () => salvaModificheUtente(tr, u.username));
@@ -189,9 +179,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return tr;
   }
 
-  /**
-   * Invia le modifiche di ruolo/stato al server per un utente specifico.
-   */
   async function salvaModificheUtente(tr, targetUsername) {
     const btnSalva    = tr.querySelector('.btn-salva-riga');
     const selectRuolo = tr.querySelector('.select-ruolo');
@@ -200,7 +187,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nuovoRuolo = selectRuolo.value;
     const nuovoStato = selectStato.value;
 
-    // Stato di caricamento
     btnSalva.classList.add('salvando');
     btnSalva.textContent = '…';
 
@@ -212,7 +198,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnSalva.textContent = '✓ Salvato';
       btnSalva.classList.add('salvato');
 
-      // Aggiorna i valori "originali" nei data attribute
       selectRuolo.dataset.originale = nuovoRuolo;
       selectStato.dataset.originale = nuovoStato;
       selectRuolo.classList.remove('modificato');
@@ -220,13 +205,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       mostraFeedback(risultato.messaggio, 'successo', '✓');
 
-      // Dopo 2s torna al testo normale
       setTimeout(() => {
         btnSalva.textContent = 'Salva';
         btnSalva.classList.remove('salvato');
       }, 2500);
 
-      // Aggiorna il log per mostrare la nuova voce
       await caricaLogs();
       aggiornaStatistiche();
 
@@ -236,9 +219,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  /**
-   * Carica e renderizza la tabella utenti.
-   */
   async function caricaUtenti() {
     statoUtenti.style.display   = 'flex';
     tabellaWrapper.style.display = 'none';
@@ -255,7 +235,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const utenti = risposta.dati || [];
     tbodyUtenti.innerHTML = '';
 
-    // Ordina: prima gli altri, poi se stesso in fondo
     const ordinati = [
       ...utenti.filter((u) => u.username !== utente.username),
       ...utenti.filter((u) => u.username === utente.username),
@@ -266,14 +245,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     tabellaWrapper.style.display = 'block';
-
-    // Aggiorna stat banned
-    const bannedCount = utenti.filter((u) => u.stato === 'Banned').length;
-    statUtenti.textContent = utenti.length;
-    statBanned.textContent = bannedCount;
   }
 
-  // Pulsante "Aggiorna"
   btnAggiornaUtenti.addEventListener('click', async () => {
     btnAggiornaUtenti.classList.add('girando');
     await caricaUtenti();
@@ -287,9 +260,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let tuttiILogs   = [];
   let filtroLogAttivo = 'tutti';
 
-  /**
-   * Mappa ogni tipo di evento a: classe CSS, classe badge, icona.
-   */
   function classificaEvento(evento) {
     const mappa = {
       'LOGIN_SUCCESS':          { rigaCls: 'successo-log', badgeCls: 'ev-login-ok',   icona: '✓', label: 'Login OK' },
@@ -306,9 +276,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return mappa[evento] || { rigaCls: '', badgeCls: 'ev-altro', icona: '·', label: evento };
   }
 
-  /**
-   * Determina se un log corrisponde al filtro attivo.
-   */
   function filtraLog(log) {
     if (filtroLogAttivo === 'tutti') return true;
 
@@ -328,9 +295,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  /**
-   * Renderizza le righe del log nella lista.
-   */
   function renderizzaLogs(logs) {
     const filtrati = logs.filter(filtraLog);
 
@@ -369,9 +333,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  /**
-   * Carica i log dal server e li renderizza.
-   */
   async function caricaLogs() {
     statoLogs.style.display = 'flex';
     logLista.style.display  = 'none';
@@ -387,11 +348,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     tuttiILogs = risposta.dati || [];
-    statEventi.textContent = tuttiILogs.length;
     renderizzaLogs(tuttiILogs);
   }
 
-  // Filtri log
   document.querySelectorAll('.filtro-log-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filtro-log-btn').forEach((b) => b.classList.remove('attivo'));
@@ -402,22 +361,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ─────────────────────────────────────────
-  //  STATISTICHE SIDEBAR
+  //  STATISTICHE SIDEBAR (AGGIORNATE FASE 6)
   // ─────────────────────────────────────────
   async function aggiornaStatistiche() {
-    const [rispostaUtenti, rispostaLogs] = await Promise.all([
-      adminGetUtenti(),
-      adminGetLogs(),
-    ]);
-
-    if (rispostaUtenti.successo) {
-      const utenti = rispostaUtenti.dati || [];
-      statUtenti.textContent = utenti.length;
-      statBanned.textContent = utenti.filter((u) => u.stato === 'Banned').length;
-    }
-
-    if (rispostaLogs.successo) {
-      statEventi.textContent = (rispostaLogs.dati || []).length;
+    const stats = await adminGetStats();
+    
+    if (stats) {
+      if (statUtenti)    statUtenti.textContent    = stats.totalUsers || 0;
+      if (statMateriali) statMateriali.textContent = stats.totalMaterials || 0;
+      if (statPost)      statPost.textContent      = stats.totalPosts || 0;
+      if (statCritici)   statCritici.textContent   = stats.criticalAlerts || 0;
     }
   }
 
@@ -427,6 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await Promise.all([
     caricaUtenti(),
     caricaLogs(),
+    aggiornaStatistiche() // Carica i numeri dei riquadri
   ]);
 
 });

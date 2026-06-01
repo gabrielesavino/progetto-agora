@@ -10,14 +10,12 @@
 </head>
 <body class="pagina-dashboard">
 
-  <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-brand">
       <span class="topbar-simbolo">🏛</span>
       <span class="topbar-nome">Agorà</span>
     </div>
 
-    <!-- Account menu (Proposta A) -->
     <div class="account-menu" id="account-menu">
       <button class="account-trigger" id="account-trigger" aria-haspopup="true" aria-expanded="false">
         <span class="account-avatar" id="account-avatar">?</span>
@@ -25,9 +23,7 @@
         <span class="account-chevron" aria-hidden="true">›</span>
       </button>
 
-      <!-- Dropdown flottante -->
       <div class="account-dropdown" id="account-dropdown" role="menu" aria-hidden="true">
-        <!-- Intestazione profilo -->
         <div class="account-dropdown-header">
           <div class="account-dropdown-avatar" id="dd-avatar">?</div>
           <div class="account-dropdown-info">
@@ -43,7 +39,7 @@
           </div>
           <div class="dd-riga">
             <span class="dd-label">Nazionalità</span>
-            <span class="dd-valore" id="dd-nazionalita">—</span>
+            <span class="badge-ruolo nationality" id="dd-nazionalita">—</span>
           </div>
           <div class="dd-riga">
             <span class="dd-label">Membro dal</span>
@@ -62,14 +58,16 @@
 
   <main class="dashboard-layout">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <nav class="sidebar-nav">
-        <a href="#sezione-upload"    class="sidebar-link attivo">
+        <a href="#sezione-upload" class="sidebar-link attivo">
           <span class="sidebar-icona">↑</span><span>Carica</span>
         </a>
         <a href="#sezione-materiali" class="sidebar-link">
           <span class="sidebar-icona">◫</span><span>Materiali</span>
+        </a>
+        <a href="#sezione-forum" class="sidebar-link">
+          <span class="sidebar-icona">💬</span><span>Forum</span>
         </a>
       </nav>
       <div class="sidebar-stats">
@@ -78,15 +76,14 @@
           <span class="stat-label">Materiali</span>
         </div>
         <div class="stat-item">
-          <span class="stat-numero" id="stat-materie">—</span>
-          <span class="stat-label">Categorie</span>
+          <span class="stat-numero" id="stat-post-totali">—</span>
+          <span class="stat-label">Post Forum</span>
         </div>
       </div>
     </aside>
 
     <div class="dashboard-contenuto">
 
-      <!-- SEZIONE UPLOAD -->
       <section id="sezione-upload" class="sezione-card">
         <div class="sezione-intestazione">
           <h2 class="sezione-titolo">Carica un materiale</h2>
@@ -151,8 +148,7 @@
         </form>
       </section>
 
-      <!-- SEZIONE MATERIALI -->
-      <section id="sezione-materiali" class="sezione-card">
+      <section id="sezione-materiali" class="sezione-card" style="display:none;">
         <div class="sezione-intestazione">
           <h2 class="sezione-titolo">Materiali disponibili</h2>
           <p class="sezione-sottotitolo">Conoscenza condivisa dalla comunità internazionale</p>
@@ -188,6 +184,75 @@
           <span class="stato-vuoto-icona">📭</span>
           <p class="stato-vuoto-testo">Nessun risultato trovato.</p>
           <p class="stato-vuoto-sub">Prova con un termine diverso o cambia filtro.</p>
+        </div>
+      </section>
+
+      <section id="sezione-forum" class="sezione-card" style="display:none;">
+        <div class="sezione-intestazione">
+          <h2 class="sezione-titolo">Forum di Discussione</h2>
+          <p class="sezione-sottotitolo">Condividi domande, consigli ed esperienze con gli altri studenti expat</p>
+        </div>
+
+        <div class="forum-creazione-box" style="margin-bottom: 2rem;">
+          <button class="btn-primario" id="btn-mostra-crea-post">✍ Avvia una discussione</button>
+          
+          <form id="form-nuovo-post" style="display: none; margin-top: 1.5rem;" novalidate>
+            <div id="feedback-forum" class="messaggio-feedback" role="alert" aria-live="polite"></div>
+            
+            <div class="gruppo-campo">
+              <label for="forum-titolo">Titolo dell'argomento <span class="obbligatorio">*</span></label>
+              <input type="text" id="forum-titolo" placeholder="es. Come registrare il contratto d'affitto a Berlino?" maxlength="100" required />
+            </div>
+            
+            <div class="gruppo-campo">
+              <label for="forum-categoria">Argomento <span class="obbligatorio">*</span></label>
+              <div class="select-wrapper">
+                <select id="forum-categoria" required>
+                  <option value="" disabled selected>Scegli una tematica</option>
+                  <option value="Generale">💬 Generale &amp; Vita Quotidiana</option>
+                  <option value="Alloggi">🏠 Alloggi &amp; Affitti</option>
+                  <option value="Burocrazia">📄 Visti, Documenti &amp; Burocrazia</option>
+                  <option value="Lavoro">💼 Lavoro &amp; Tirocini</option>
+                </select>
+                <span class="select-freccia">›</span>
+              </div>
+            </div>
+            
+            <div class="gruppo-campo">
+              <label for="forum-messaggio">Messaggio <span class="obbligatorio">*</span></label>
+              <textarea id="forum-messaggio" rows="5" placeholder="Descrivi il tuo dubbio o condividi la tua esperienza nel dettaglio..." maxlength="2000" required></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+              <button type="submit" class="btn-primario">Pubblica post</button>
+              <button type="button" class="btn-sfoglia" id="btn-annulla-post">Annulla</button>
+            </div>
+          </form>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eef2f5; margin: 2rem 0;" />
+
+        <div class="barra-ricerca-filtri">
+          <div class="filtri-categoria" id="filtri-forum-tag">
+            <button class="filtro-cat-btn attivo" data-tag="tutti">Tutti i thread</button>
+            <button class="filtro-cat-btn" data-tag="Generale">Generale</button>
+            <button class="filtro-cat-btn" data-tag="Alloggi">Alloggi</button>
+            <button class="filtro-cat-btn" data-tag="Burocrazia">Burocrazia</button>
+            <button class="filtro-cat-btn" data-tag="Lavoro">Lavoro</button>
+          </div>
+        </div>
+
+        <div id="stato-forum-lista" class="stato-lista">
+          <div class="spinner-classico"></div>
+          <p>Caricamento discussioni in corso…</p>
+        </div>
+
+        <div id="contenitore-post-forum" class="lista-post-forum" style="display:none;"></div>
+
+        <div id="stato-vuoto-forum" class="stato-vuoto" style="display:none;">
+          <span class="stato-vuoto-icona">💬</span>
+          <p class="stato-vuoto-testo">Ancora nessuna discussione qui.</p>
+          <p class="stato-vuoto-sub">Fai tu il primo passo! Condividi un pensiero o una domanda con la community.</p>
         </div>
       </section>
 

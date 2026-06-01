@@ -1,13 +1,13 @@
 /**
- * AGORÀ — dashboard.js v5.1
+ * AGORÀ — dashboard.js (Fase 6)
  * Controller Dashboard Studente.
- * Account menu dropdown, 3 categorie globali,
- * ricerca testuale live + filtri categoria client-side.
+ * Gestisce: Menu Profilo, Caricamento e Ricerca Live Materiali,
+ * Navigazione a Tab e intero sistema Forum (Thread + Commenti).
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  // ── PROTEZIONE ROTTA ──────────────────────
+  // ── PROTEZIONE ROTTA CLIENT-SIDE ──────────────────────
   const utente = getUtenteSessione();
   if (!utente) { window.location.href = '/index.html'; return; }
   if (utente.ruolo === 'Admin') { window.location.href = '/admin.html'; return; }
@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     : '—';
   document.getElementById('dd-data').textContent = dataReg;
 
-  // Toggle apertura/chiusura
   const accountTrigger  = document.getElementById('account-trigger');
   const accountDropdown = document.getElementById('account-dropdown');
 
@@ -56,64 +55,112 @@ document.addEventListener('DOMContentLoaded', async () => {
     accountDropdown.classList.contains('aperto') ? chiudiDropdown() : apriDropdown();
   });
 
-  // Chiudi cliccando fuori
   document.addEventListener('click', (e) => {
     if (!e.target.closest('#account-menu')) chiudiDropdown();
   });
 
-  // Chiudi con Escape
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') chiudiDropdown();
   });
 
-  // Logout
   document.getElementById('btn-logout').addEventListener('click', () => {
     cancellaSessione();
     window.location.href = '/index.html';
   });
 
-  // ── DOM REFS ──────────────────────────────
-  const zonaUpload          = document.getElementById('zona-upload');
-  const inputFile           = document.getElementById('input-file');
-  const btnSfoglia          = document.getElementById('btn-sfoglia');
-  const zonaContenuto       = document.getElementById('zona-upload-contenuto');
-  const zonaFileSelezionato = document.getElementById('zona-file-selezionato');
-  const fileNomeDisplay     = document.getElementById('file-nome-display');
-  const fileDimDisplay      = document.getElementById('file-dimensione-display');
-  const fileIconaTipo       = document.getElementById('file-icona-tipo');
-  const btnRimuovi          = document.getElementById('btn-rimuovi-file');
-  const formUpload          = document.getElementById('form-upload');
-  const inputTitolo         = document.getElementById('upload-titolo');
-  const selectMateria       = document.getElementById('upload-materia');
-  const campoCatCustom      = document.getElementById('campo-categoria-custom');
-  const inputCatCustom      = document.getElementById('upload-categoria-custom');
-  const btnUpload           = document.getElementById('btn-upload');
-  const feedbackUpload      = document.getElementById('feedback-upload');
-  const grigliaMateriali    = document.getElementById('griglia-materiali');
-  const statoMateriali      = document.getElementById('stato-materiali');
-  const statoVuoto          = document.getElementById('stato-vuoto');
-  const inputRicerca        = document.getElementById('input-ricerca');
-  const btnCancellaRicerca  = document.getElementById('btn-cancella-ricerca');
-  const risultatiCount      = document.getElementById('risultati-count');
-  const statTotale          = document.getElementById('stat-totale');
-  const statMaterie         = document.getElementById('stat-materie');
+  // ── RIFERIMENTI DOM (MATERIALI & UPLOAD) ───────────────────
+  const zonaUpload           = document.getElementById('zona-upload');
+  const inputFile            = document.getElementById('input-file');
+  const btnSfoglia           = document.getElementById('btn-sfoglia');
+  const zonaContenuto        = document.getElementById('zona-upload-contenuto');
+  const zonaFileSelezionato  = document.getElementById('zona-file-selezionato');
+  const fileNomeDisplay      = document.getElementById('file-nome-display');
+  const fileDimDisplay       = document.getElementById('file-dimensione-display');
+  const fileIconaTipo        = document.getElementById('file-icona-tipo');
+  const btnRimuovi           = document.getElementById('btn-rimuovi-file');
+  const formUpload           = document.getElementById('form-upload');
+  const inputTitolo          = document.getElementById('upload-titolo');
+  const selectMateria        = document.getElementById('upload-materia');
+  const campoCatCustom       = document.getElementById('campo-categoria-custom');
+  const inputCatCustom       = document.getElementById('upload-categoria-custom');
+  const btnUpload            = document.getElementById('btn-upload');
+  const feedbackUpload       = document.getElementById('feedback-upload');
+  const grigliaMateriali     = document.getElementById('griglia-materiali');
+  const statoMateriali       = document.getElementById('stato-materiali');
+  const statoVuoto           = document.getElementById('stato-vuoto');
+  const inputRicerca         = document.getElementById('input-ricerca');
+  const btnCancellaRicerca   = document.getElementById('btn-cancella-ricerca');
+  const risultatiCount       = document.getElementById('risultati-count');
+  const statTotale           = document.getElementById('stat-totale');
+
+  // ── RIFERIMENTI DOM (FORUM - FASE 6) ──────────────────────
+  const btnMostraCreaPost    = document.getElementById('btn-mostra-crea-post');
+  const formNuovoPost        = document.getElementById('form-nuovo-post');
+  const feedbackForum        = document.getElementById('feedback-forum');
+  const inputForumTitolo     = document.getElementById('forum-titolo');
+  const selectForumCategoria = document.getElementById('forum-categoria');
+  const textareaForumMessaggio = document.getElementById('forum-messaggio');
+  const btnAnnullaPost       = document.getElementById('btn-annulla-post');
+  const contenitorePostForum = document.getElementById('contenitore-post-forum');
+  const statoForumLista      = document.getElementById('stato-forum-lista');
+  const statoVuotoForum      = document.getElementById('stato-vuoto-forum');
+  const statPostTotali       = document.getElementById('stat-post-totali');
 
   // ── STATO LOCALE ──────────────────────────
   let fileScelto        = null;
   let tuttiIMateriali   = [];
   let filtroCategoria   = 'tutti';
   let testoRicerca      = '';
+  
+  let tuttiIPost        = [];
+  let filtroForumTag    = 'tutti';
 
-  // ── MOSTRA/NASCONDI CAMPO CUSTOM ─────────
-  selectMateria.addEventListener('change', () => {
-    const mostra = selectMateria.value === 'altro';
-    campoCatCustom.style.display = mostra ? 'block' : 'none';
-    if (!mostra) inputCatCustom.value = '';
-    selectMateria.classList.remove('errore');
+  // ── NAVIGAZIONE SIDEBAR (CAMBIO TAB/SEZIONE) ──────────────────
+  const linksSidebar = document.querySelectorAll('.sidebar-nav .sidebar-link');
+  const sezioni = {
+    '#sezione-upload': document.getElementById('sezione-upload'),
+    '#sezione-materiali': document.getElementById('sezione-materiali'),
+    '#sezione-forum': document.getElementById('sezione-forum')
+  };
+
+  linksSidebar.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      linksSidebar.forEach((l) => l.classList.remove('attivo'));
+      link.classList.add('attivo');
+
+      const target = link.getAttribute('href');
+      Object.keys(sezioni).forEach((key) => {
+        if (sezioni[key]) {
+          sezioni[key].style.display = (key === target) ? 'block' : 'none';
+        }
+      });
+
+      // Ricarica dati aggiornati all'ingresso del tab
+      if (target === '#sezione-materiali') caricaESintetizzaMateriali();
+      if (target === '#sezione-forum') caricaDiscussioniForum();
+    });
   });
 
-  // ── UTILITY ──────────────────────────────
+  // ── GESTIONE INTERFACCIA APERTURA NUOVO POST FORUM ────────────
+  if (btnMostraCreaPost && formNuovoPost && btnAnnullaPost) {
+    btnMostraCreaPost.addEventListener('click', () => {
+      formNuovoPost.style.display = 'block';
+      btnMostraCreaPost.style.display = 'none';
+      nascondiFeedback(feedbackForum);
+    });
+
+    btnAnnullaPost.addEventListener('click', () => {
+      formNuovoPost.style.display = 'none';
+      btnMostraCreaPost.style.display = 'block';
+      formNuovoPost.reset();
+      nascondiFeedback(feedbackForum);
+    });
+  }
+
+  // ── UTILITY CONDIVISE ──────────────────────────────
   function mostraFeedback(el, testo, tipo, icona = '') {
+    if (!el) return;
     el.className = `messaggio-feedback ${tipo} visibile`;
     el.innerHTML = icona
       ? `<span class="icona">${icona}</span><span>${testo}</span>`
@@ -122,6 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function nascondiFeedback(el) {
+    if (!el) return;
     el.classList.remove('visibile', 'successo', 'errore');
     el.innerHTML = '';
   }
@@ -148,9 +196,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return d.innerHTML;
   }
 
-  /**
-   * Restituisce la classe CSS del tag categoria in base alla categoria.
-   */
   function classeCategoria(cat) {
     if (!cat) return 'cat-altro';
     const c = cat.toLowerCase();
@@ -160,7 +205,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     return 'cat-altro';
   }
 
-  // ── SELEZIONE FILE ────────────────────────
+  // ── SEZIONE UPLOAD MATERIALI ────────────────────────
+  selectMateria.addEventListener('change', () => {
+    const mostra = selectMateria.value === 'altro';
+    campoCatCustom.style.display = mostra ? 'block' : 'none';
+    if (!mostra) inputCatCustom.value = '';
+    selectMateria.classList.remove('errore');
+  });
+
   function mostraFileSelezionato(file) {
     fileScelto = file;
     const ext = file.name.split('.').pop().toLowerCase();
@@ -182,7 +234,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnRimuovi.addEventListener('click', (e) => { e.stopPropagation(); resetFile(); nascondiFeedback(feedbackUpload); });
   inputFile.addEventListener('change', () => { if (inputFile.files.length > 0) mostraFileSelezionato(inputFile.files[0]); });
 
-  // Drag & drop
   zonaUpload.addEventListener('dragover',  (e) => { e.preventDefault(); zonaUpload.classList.add('drag-over'); });
   zonaUpload.addEventListener('dragleave', ()  => zonaUpload.classList.remove('drag-over'));
   zonaUpload.addEventListener('drop', (e) => {
@@ -199,7 +250,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // ── SUBMIT UPLOAD ─────────────────────────
   formUpload.addEventListener('submit', async (e) => {
     e.preventDefault();
     nascondiFeedback(feedbackUpload);
@@ -237,7 +287,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       campoCatCustom.style.display = 'none';
       inputCatCustom.value = '';
       await caricaESintetizzaMateriali();
-      setTimeout(() => document.getElementById('sezione-materiali').scrollIntoView({ behavior: 'smooth' }), 600);
     } else {
       mostraFeedback(feedbackUpload, risultato.messaggio, 'errore', '✕');
     }
@@ -247,7 +296,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   selectMateria.addEventListener('change', () => selectMateria.classList.remove('errore'));
   inputCatCustom.addEventListener('input', () => inputCatCustom.classList.remove('errore'));
 
-  // ── RICERCA LIVE ──────────────────────────
+
+  // ── SEZIONE VISUALIZZAZIONE & FILTRO MATERIALI ──────────────────
   inputRicerca.addEventListener('input', () => {
     testoRicerca = inputRicerca.value.trim().toLowerCase();
     btnCancellaRicerca.style.display = testoRicerca ? 'block' : 'none';
@@ -262,29 +312,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     inputRicerca.focus();
   });
 
-  // ── FILTRI CATEGORIA ──────────────────────
-  document.querySelectorAll('.filtro-cat-btn').forEach((btn) => {
+  document.querySelectorAll('#filtri-categoria .filtro-cat-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.filtro-cat-btn').forEach((b) => b.classList.remove('attivo'));
+      document.querySelectorAll('#filtri-categoria .filtro-cat-btn').forEach((b) => b.classList.remove('attivo'));
       btn.classList.add('attivo');
       filtroCategoria = btn.dataset.categoria;
       renderizzaMateriali(tuttiIMateriali);
     });
   });
 
-  // ── RENDERING MATERIALI ───────────────────
-
-  /**
-   * Filtra i materiali combinando filtro categoria e testo ricerca.
-   */
-  function applicaFiltri(materiali) {
+  function applicaFiltriMateriali(materiali) {
     return materiali.filter((m) => {
-      // Filtro categoria
       const passaCategoria = filtroCategoria === 'tutti' ||
         m.materia === filtroCategoria ||
         m.materia?.toLowerCase().includes(filtroCategoria.toLowerCase());
 
-      // Filtro testo (titolo, materia, autore)
       const passaRicerca = !testoRicerca ||
         m.titolo?.toLowerCase().includes(testoRicerca) ||
         m.materia?.toLowerCase().includes(testoRicerca) ||
@@ -300,10 +342,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const clsCat   = classeCategoria(m.materia);
 
     const card = document.createElement('div');
-    card.className       = 'card-materiale';
-    card.dataset.materia = m.materia;
-    card.dataset.titolo  = (m.titolo || '').toLowerCase();
-    card.dataset.autore  = (m.autore || '').toLowerCase();
+    card.className = 'card-materiale';
 
     card.innerHTML = `
       <div class="card-header">
@@ -326,11 +365,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderizzaMateriali(materiali) {
-    const filtrati = applicaFiltri(materiali);
-
+    const filtrati = applicaFiltriMateriali(materiali);
     grigliaMateriali.innerHTML = '';
 
-    // Aggiorna contatore
     if (testoRicerca || filtroCategoria !== 'tutti') {
       risultatiCount.style.display = 'block';
       risultatiCount.innerHTML =
@@ -368,16 +405,203 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!risposta.successo) { statoVuoto.style.display = 'block'; return; }
 
     tuttiIMateriali = risposta.dati || [];
-
-    // Aggiorna stats sidebar
-    const categorieUniche = new Set(tuttiIMateriali.map((m) => m.materia));
     statTotale.textContent  = tuttiIMateriali.length;
-    statMaterie.textContent = categorieUniche.size;
 
     renderizzaMateriali(tuttiIMateriali);
   }
 
-  // ── AVVIO ─────────────────────────────────
-  await caricaESintetizzaMateriali();
+
+  // ── SEZIONE FORUM: INVIO THREAD E COMPORTAMENTO (FASE 6) ───────────
+  formNuovoPost.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    nascondiFeedback(feedbackForum);
+
+    const titolo = inputForumTitolo.value.trim();
+    const categoria = selectForumCategoria.value;
+    const messaggio = textareaForumMessaggio.value.trim();
+
+    if (!titolo) { inputForumTitolo.classList.add('errore'); mostraFeedback(feedbackForum, 'Inserisci l\'oggetto.', 'errore', '⚠'); return; }
+    if (!categoria) { selectForumCategoria.classList.add('errore'); mostraFeedback(feedbackForum, 'Scegli la tematica.', 'errore', '⚠'); return; }
+    if (!messaggio) { textareaForumMessaggio.classList.add('errore'); mostraFeedback(feedbackForum, 'Scrivi un messaggio corpo.', 'errore', '⚠'); return; }
+
+    const btnInviaPost = formNuovoPost.querySelector('button[type="submit"]');
+    btnInviaPost.disabled = true;
+    btnInviaPost.textContent = 'Pubblicazione in corso…';
+
+    const risposta = await creaPost(titolo, categoria, messaggio, utente.username);
+
+    btnInviaPost.disabled = false;
+    btnInviaPost.textContent = 'Pubblica post';
+
+    if (risposta.successo) {
+      mostraFeedback(feedbackForum, 'Discussione avviata con successo!', 'successo', '✓');
+      formNuovoPost.reset();
+      
+      setTimeout(() => {
+        formNuovoPost.style.display = 'none';
+        btnMostraCreaPost.style.display = 'block';
+        nascondiFeedback(feedbackForum);
+      }, 1500);
+
+      await caricaDiscussioniForum();
+    } else {
+      mostraFeedback(feedbackForum, risposta.messaggio || 'Errore di rete.', 'errore', '✕');
+    }
+  });
+
+  inputForumTitolo.addEventListener('input', () => inputForumTitolo.classList.remove('errore'));
+  selectForumCategoria.addEventListener('change', () => selectForumCategoria.classList.remove('errore'));
+  textareaForumMessaggio.addEventListener('input', () => textareaForumMessaggio.classList.remove('errore'));
+
+  // Filtri tematici del forum
+  document.querySelectorAll('#filtri-forum-tag .filtro-cat-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#filtri-forum-tag .filtro-cat-btn').forEach((b) => b.classList.remove('attivo'));
+      btn.classList.add('attivo');
+      filtroForumTag = btn.dataset.tag;
+      renderizzaPosts(tuttiIPost);
+    });
+  });
+
+  // Caricamento discussioni
+  async function caricaDiscussioniForum() {
+    if (!statoForumLista || !contenitorePostForum) return;
+
+    statoForumLista.style.display = 'flex';
+    contenitorePostForum.style.display = 'none';
+    statoVuotoForum.style.display = 'none';
+
+    const risposta = await getPosts();
+    statoForumLista.style.display = 'none';
+
+    if (!risposta.successo) {
+      statoVuotoForum.style.display = 'block';
+      return;
+    }
+
+    tuttiIPost = risposta.dati || [];
+    if (statPostTotali) statPostTotali.textContent = tuttiIPost.length;
+
+    renderizzaPosts(tuttiIPost);
+  }
+
+  // Renderizzazione schede thread + commenti interattivi inline
+  function renderizzaPosts(posts) {
+    contenitorePostForum.innerHTML = '';
+
+    const filtrati = posts.filter(p => filtroForumTag === 'tutti' || p.categoria === filtroForumTag);
+
+    if (filtrati.length === 0) {
+      contenitorePostForum.style.display = 'none';
+      statoVuotoForum.style.display = 'block';
+      return;
+    }
+
+    statoVuotoForum.style.display = 'none';
+    contenitorePostForum.style.display = 'flex';
+
+    filtrati.forEach((post, i) => {
+      const cardPost = document.createElement('div');
+      cardPost.className = 'forum-post-card';
+      cardPost.style.animationDelay = `${i * 30}ms`;
+
+      const dataThread = formattaData(post.timestamp || post.dataCreazione);
+      const listaCommenti = post.commenti || [];
+
+      let clsTag = 'cat-altro';
+      if (post.categoria === 'Alloggi') clsTag = 'cat-informatica';
+      if (post.categoria === 'Burocrazia') clsTag = 'cat-expat';
+      if (post.categoria === 'Lavoro') clsTag = 'cat-lingue';
+
+      cardPost.innerHTML = `
+        <div class="forum-post-header">
+          <div class="forum-post-main-info">
+            <span class="card-materia-tag ${clsTag}">${escapeHtml(post.categoria)}</span>
+            <h3 class="forum-post-titolo">${escapeHtml(post.titolo)}</h3>
+          </div>
+          <div class="forum-post-meta">
+            <span>👤 ${escapeHtml(post.autore)}</span>
+            <span>📅 ${dataThread}</span>
+          </div>
+        </div>
+        <div class="forum-post-corpo">
+          <p>${escapeHtml(post.messaggio || post.corpo)}</p>
+        </div>
+        
+        <div class="forum-commenti-sezione">
+          <button class="btn-toggle-commenti" data-id="${post.id}">
+            💬 Risposte (${listaCommenti.length})
+          </button>
+          
+          <div class="forum-commenti-box" id="box-commenti-${post.id}" style="display:none;">
+            <div class="forum-lista-commenti">
+              ${renderizzaCommentiHtml(listaCommenti)}
+            </div>
+            
+            <form class="form-nuovo-commento" data-id="${post.id}">
+              <input type="text" placeholder="Scrivi una risposta pubblica..." maxlength="1000" required />
+              <button type="submit" class="btn-scarica" style="padding: 0.4rem 1.2rem; font-size:0.8rem;">Rispondi</button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      // Evento Toggle visualizzazione risposte
+      const btnToggle = cardPost.querySelector('.btn-toggle-commenti');
+      const boxCommenti = cardPost.querySelector(`#box-commenti-${post.id}`);
+      btnToggle.addEventListener('click', () => {
+        const nascondi = boxCommenti.style.display === 'block';
+        boxCommenti.style.display = nascondi ? 'none' : 'block';
+      });
+
+      // Invio commenti sotto un thread specifico
+      const formCommento = cardPost.querySelector('.form-nuovo-commento');
+      formCommento.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const inputField = formCommento.querySelector('input');
+        const testoRisposta = inputField.value.trim();
+        if (!testoRisposta) return;
+
+        const btnRispondi = formCommento.querySelector('button');
+        btnRispondi.disabled = true;
+
+        const esito = await creaCommento(post.id, testoRisposta, utente.username);
+        btnRispondi.disabled = false;
+
+        if (esito.successo) {
+          inputField.value = '';
+          await caricaDiscussioniForum();
+          // Mantiene aperto il box dopo il re-render
+          const boxEspanso = document.getElementById(`box-commenti-${post.id}`);
+          if (boxEspanso) boxEspanso.style.display = 'block';
+        } else {
+          alert(esito.messaggio || 'Impossibile inviare il commento.');
+        }
+      });
+
+      contenitorePostForum.appendChild(cardPost);
+    });
+  }
+
+  function renderizzaCommentiHtml(commenti) {
+    if (!commenti || commenti.length === 0) {
+      return `<div class="commento-vuoto">Nessuna risposta presente. Avvia il dialogo!</div>`;
+    }
+    return commenti.map(c => `
+      <div class="forum-commento-singolo">
+        <div class="commento-meta">
+          <span class="commento-autore">👤 ${escapeHtml(c.autore)}</span>
+          <span class="commento-data">${formattaData(c.timestamp || c.data)}</span>
+        </div>
+        <p class="commento-testo">${escapeHtml(c.messaggio || c.testo || c.corpo)}</p>
+      </div>
+    `).join('');
+  }
+
+  // ── AVVIO IN PARALLELO DELLE RISORSE ───────────────────────
+  await Promise.all([
+    caricaESintetizzaMateriali(),
+    caricaDiscussioniForum()
+  ]);
 
 });
